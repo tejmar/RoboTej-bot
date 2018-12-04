@@ -21,7 +21,7 @@ from IHbot.modules.helper_funcs.misc import paginate_modules
 PM_START_TEXT = """
 Hello {}, my name is {}!
 
-I'm a group manager bot maintained by (tg://user?id={}). I'm built in python3, using the \
+I'm a group manager bot maintained by tejmar. I'm built in python3, using the \
 python-telegram-bot library
 
 You can find the list of available commands with /help.
