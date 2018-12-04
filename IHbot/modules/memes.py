@@ -155,3 +155,100 @@ dispatcher.add_handler(STRETCH_HANDLER)
 dispatcher.add_handler(VAPOR_HANDLER)
 dispatcher.add_handler(MOCK_HANDLER)
 dispatcher.add_handler(ME_TOO_THANKS_HANDLER)
+
+    reply_text = re.sub(r'[rl]', "w", message.reply_to_message.text)
+    reply_text = re.sub(r'[ｒｌ]', "ｗ", message.reply_to_message.text)
+    reply_text = re.sub(r'[RL]', 'W', reply_text)
+    reply_text = re.sub(r'[ＲＬ]', 'Ｗ', reply_text)
+    reply_text = re.sub(r'n([aeiouａｅｉｏｕ])', r'ny\1', reply_text)
+    reply_text = re.sub(r'ｎ([ａｅｉｏｕ])', r'ｎｙ\1', reply_text)
+    reply_text = re.sub(r'N([aeiouAEIOU])', r'Ny\1', reply_text)
+    reply_text = re.sub(r'Ｎ([ａｅｉｏｕＡＥＩＯＵ])', r'Ｎｙ\1', reply_text)
+    reply_text = re.sub(r'\!+', ' ' + random.choice(faces), reply_text)
+    reply_text = re.sub(r'！+', ' ' + random.choice(faces), reply_text)
+    reply_text = reply_text.replace("ove", "uv")
+    reply_text = reply_text.replace("ｏｖｅ", "ｕｖ")
+    reply_text += ' ' + random.choice(faces)
+    message.reply_to_message.reply_text(reply_text)
+
+@run_async
+def stretch(bot: Bot, update: Update):
+    message = update.effective_message
+    count = random.randint(3, 10)
+    reply_text = re.sub(r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])', (r'\1' * count), message.reply_to_message.text)
+    message.reply_to_message.reply_text(reply_text)
+
+@run_async
+def vapor(bot: Bot, update: Update, args: List[str]):
+    message = update.effective_message
+
+    if not message.reply_to_message:
+        if not args:
+            message.reply_text("I need a message to convert to vaporwave text.")
+        else:
+            noreply = True
+            data = message.text.split(None, 1)[1]
+    elif message.reply_to_message:
+        noreply = False
+        data = message.reply_to_message.text
+    else:
+        data = ''
+
+    reply_text = str(data).translate(WIDE_MAP)
+    if noreply:
+        message.reply_text(reply_text)
+    else:
+        message.reply_to_message.reply_text(reply_text)
+
+@run_async
+def spongemocktext(bot: Bot, update: Update):
+    message = update.effective_message
+    if message.reply_to_message:
+        data = message.reply_to_message.text
+    else:
+        data = str('Haha yes, I know how to mock text.')
+
+    reply_text = spongemock.mock(data)
+    message.reply_text(reply_text)
+
+@run_async
+def me_too(bot: Bot, update: Update):
+    message = update.effective_message
+    if random.randint(0, 100) > 60:
+        reply = random.choice(["Me too thanks", "Haha yes, me too", "Same lol", "Me irl"])
+        message.reply_text(reply)
+
+__help__ = """
+- Reply to a text with /🅱️ or /😂 or /👏
+- You can also use the text version of these : /bmoji or /copypasta or /clapmoji
+- /vapor : Converts the text into monospace
+- /stretch : Stretches the text
+- /owo : Adds random owo reactions
+- /mock : Converts text into alternate capital and small letters
+"""
+
+__mod_name__ = "Memes"
+
+COPYPASTA_HANDLER = DisableAbleCommandHandler("copypasta", copypasta)
+COPYPASTA_ALIAS_HANDLER = DisableAbleCommandHandler("😂", copypasta)
+CLAPMOJI_HANDLER = DisableAbleCommandHandler("clapmoji", clapmoji)
+CLAPMOJI_ALIAS_HANDLER = DisableAbleCommandHandler("👏", clapmoji)
+BMOJI_HANDLER = DisableAbleCommandHandler("🅱", bmoji)
+BMOJI_ALIAS_HANDLER = DisableAbleCommandHandler("bmoji", bmoji)
+OWO_HANDLER = DisableAbleCommandHandler("owo", owo)
+STRETCH_HANDLER = DisableAbleCommandHandler("stretch", stretch)
+VAPOR_HANDLER = DisableAbleCommandHandler("vapor", vapor, pass_args=True)
+MOCK_HANDLER = DisableAbleCommandHandler("mock", spongemocktext, admin_ok=True)
+ME_TOO_THANKS_HANDLER = DisableAbleRegexHandler(r"(?i)me too", me_too, friendly="me_too")
+
+dispatcher.add_handler(COPYPASTA_HANDLER)
+dispatcher.add_handler(COPYPASTA_ALIAS_HANDLER)
+dispatcher.add_handler(CLAPMOJI_HANDLER)
+dispatcher.add_handler(CLAPMOJI_ALIAS_HANDLER)
+dispatcher.add_handler(BMOJI_HANDLER)
+dispatcher.add_handler(BMOJI_ALIAS_HANDLER)
+dispatcher.add_handler(OWO_HANDLER)
+dispatcher.add_handler(STRETCH_HANDLER)
+dispatcher.add_handler(VAPOR_HANDLER)
+dispatcher.add_handler(MOCK_HANDLER)
+dispatcher.add_handler(ME_TOO_THANKS_HANDLER)
