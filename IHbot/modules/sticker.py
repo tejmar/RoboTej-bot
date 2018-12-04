@@ -112,3 +112,46 @@ KANG_HANDLER = DisableAbleCommandHandler("kang", kang)
 dispatcher.add_handler(STICKERID_HANDLER)
 dispatcher.add_handler(GETSTICKER_HANDLER)
 dispatcher.add_handler(KANG_HANDLER)
+
+        msg.reply_text("Please reply to a sticker for me to kang it.")
+
+def makepack_internal(msg, user, png_sticker, emoji, bot):
+    name = user.first_name
+    name = name[:50]
+    hash = hashlib.sha1(bytearray(user.id)).hexdigest()
+    packname = f"a{hash[:20]}_by_{bot.username}"
+    try:
+        success = bot.create_new_sticker_set(user.id, packname, name + "'s kang pack",
+                                             png_sticker=png_sticker,
+                                             emojis=emoji)
+    except TelegramError as e:
+        print(e)
+        if e.message == "Sticker set name is already occupied":
+            msg.reply_text("Your pack can be found [here](t.me/addstickers/%s)" % packname,
+                           parse_mode=ParseMode.MARKDOWN)
+        elif e.message == "Peer_id_invalid":
+            msg.reply_text("Contact me in PM first.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(
+                text="Start", url=f"t.me/{bot.usename}")]]))
+        return
+
+    if success:
+        msg.reply_text("Sticker pack successfully created. Get it [here](t.me/addstickers/%s)" % packname,
+                       parse_mode=ParseMode.MARKDOWN)
+    else:
+        msg.reply_text("Failed to create sticker pack. Possibly due to blek mejik.")
+
+__help__ = """
+- /stickerid: reply to a sticker to me to tell you its file ID.
+- /getsticker: reply to a sticker to me to upload its raw PNG file.
+- /kang: reply to a sticker to add it to your pack.
+"""
+
+__mod_name__ = "Stickers"
+
+STICKERID_HANDLER = DisableAbleCommandHandler("stickerid", stickerid)
+GETSTICKER_HANDLER = DisableAbleCommandHandler("getsticker", getsticker)
+KANG_HANDLER = DisableAbleCommandHandler("kang", kang)
+
+dispatcher.add_handler(STICKERID_HANDLER)
+dispatcher.add_handler(GETSTICKER_HANDLER)
+dispatcher.add_handler(KANG_HANDLER)
