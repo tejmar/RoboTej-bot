@@ -22,49 +22,6 @@ def afk(bot: Bot, update: Update):
         reason = ""
 
     sql.set_afk(update.effective_user.id, reason)
-    update.effective_message.reply_text("{} is now AFK!".format(update.effective_user.first_name))
-
-
-@run_async
-def no_longer_afk(bot: Bot, update: Update):
-    user = update.effective_user  # type: Optional[User]
-
-    if not user:  # ignore channels
-        return
-
-    res = sql.rm_afk(user.id)
-    if res:
-        update.effective_message.reply_text("{} has returned!".format(update.effective_user.first_name))
-
-
-@run_async
-def reply_afk(bot: Bot, update: Update):
-    message = update.effective_message  # type: Optional[Message]
-    entities = message.parse_entities([MessageEntity.TEXT_MENTION, MessageEntity.MENTION])
-from typing import Optional
-
-from telegram import Message, Update, Bot, User
-from telegram import MessageEntity
-from telegram.ext import Filters, MessageHandler, run_async
-
-from IHbot import dispatcher
-from IHbot.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
-from IHbot.modules.sql import afk_sql as sql
-from IHbot.modules.users import get_user_id
-
-AFK_GROUP = 7
-AFK_REPLY_GROUP = 8
-
-
-@run_async
-def afk(bot: Bot, update: Update):
-    args = update.effective_message.text.split(None, 1)
-    if len(args) >= 2:
-        reason = args[1]
-    else:
-        reason = ""
-
-    sql.set_afk(update.effective_user.id, reason)
     update.effective_message.reply_text("{} is now HIDING!".format(update.effective_user.first_name))
 
 
