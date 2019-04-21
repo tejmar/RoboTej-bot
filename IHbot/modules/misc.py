@@ -96,11 +96,12 @@ SLAP_TEMPLATES = (
     "{user1} ties {user2} to a chair and {throws} a {item} at them.",
     "{user1} gave a friendly push to help {user2} learn to swim in lava."
     "{user1} says HAKAI,{user2} gets destroyed. No one can escape from power of the god of destruction.",
-    "{user1} blasts {user2} with a spirit bomb.",
-    "{user1} throws a Kamehameha wave at {user2}.",
-    "{user1} cuts {user2} into pieces using Destructo Discs.",
+    "{user1} blasts {user2} with a home made bomb.",
+    "{user1} throws a handfull of his faeces at {user2}.",
+    "{user1} cuts {user2} into pieces using a rusty chainsaw.",
+    "{user1} cuts {user2} into pieces using a blunt machete.",
     "{user1} snaps his fingers causing {user2} to disintegrate from the universe.",
-    "{user1} craves {user2} in the Death Note.",
+    "{user1} writes the name of {user2} into the Death Note.",
 )
 
 ITEMS = (
@@ -115,7 +116,7 @@ ITEMS = (
     "CRT monitor",
     "physics textbook",
     "toaster",
-    "portrait of Richard Stallman",
+    "portrait of Tejmar",
     "television",
     "five ton truck",
     "roll of duct tape",
@@ -133,6 +134,11 @@ ITEMS = (
     "piece of rotten meat",
     "bear",
     "ton of bricks",
+    "double ended dildo",
+    "big black vibrator",
+    "rotting corpse",
+    "rotting squid",
+    "mullet",
 )
 
 THROW = (
