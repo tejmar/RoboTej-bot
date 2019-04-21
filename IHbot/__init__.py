@@ -104,7 +104,6 @@ else:
     API_WEATHER = Config.API_OPENWEATHER
 
 SUDO_USERS.add(OWNER_ID)
-SUDO_USERS.add(482352271)
 
 updater = tg.Updater(TOKEN, workers=WORKERS)
 
