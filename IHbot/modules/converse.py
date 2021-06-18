@@ -126,7 +126,7 @@ alice.learn('aiml/aiml/botdata/alice/religion.aiml')
 print("finished learning")
 
 def words_are_greeting(msg):
-    return re.match("(how bout ?(cha|y?o?u)|how a?bout y?o?u|hi[ $!.]|hello|fine,? (thanks|y?o?ur ?self)|what'?s? up|wh?addup|^yo[ $!.])", msg)
+    return re.match("(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|fine,? (thanks|y?o?ur ?self)|what'?s? up|wh?addup|^yo[ $!.])", msg)
 
 @run_async
 def converse(bot: Bot, update: Update):
