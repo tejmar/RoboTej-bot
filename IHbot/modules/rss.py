@@ -129,7 +129,7 @@ def remove_url(bot, update, args):
         update.effective_message.reply_text("URL missing")
 
 
-def rss_update(bot, job):
+def rss_update(bot=None, job=None):
     user_data = sql.get_all()
 
     # this loop checks for every row in the DB
@@ -185,7 +185,7 @@ def rss_update(bot, job):
                              .format(len(new_entry_links) - 5))
 
 
-def rss_set(bot, job):
+def rss_set(bot=None, job=None):
     user_data = sql.get_all()
 
     # this loop checks for every row in the DB
@@ -228,10 +228,9 @@ __mod_name__ = "RSS Feed"
 
 job = updater.job_queue
 
-# job_rss_set = job.run_once(rss_set, 5)
-rss_set()
+job_rss_set = job.run_once(rss_set, 5)
 job_rss_update = job.run_repeating(rss_update, interval=60, first=60)
-# job_rss_set.enabled = True
+job_rss_set.enabled = True
 job_rss_update.enabled = True
 
 SHOW_URL_HANDLER = CommandHandler("rss", show_url, pass_args=True)
