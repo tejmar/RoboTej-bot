@@ -9,6 +9,9 @@ class CustomFilters(object):
         def filter(self, message: Message):
             return bool(message.from_user and message.from_user.id in SUPPORT_USERS)
 
+        def __call_(self, update: Update):
+            pass
+
     support_filter = _Supporters()
 
     class _Sudoers(BaseFilter):
@@ -21,12 +24,6 @@ class CustomFilters(object):
         def __init__(self, mimetype):
             self.mime_type = mimetype
             self.name = "CustomFilters.mime_type({})".format(self.mime_type)
-
-        def _BaseFiler__call__(self, update: Update):
-            BaseFilter.__call__(update)
-
-        def __Sudoers__call__(self, update: Update):
-            BaseFilter.__call__(update)
 
         def filter(self, message: Message):
             return bool(message.document and message.document.mime_type == self.mime_type)
