@@ -370,12 +370,12 @@ __help__ = """
 
 __mod_name__ = "Muting & Restricting"
 
-MUTE_HANDLER = CommandHandler("mute", mute, pass_args=True, filters=Filters.group)
-UNMUTE_HANDLER = CommandHandler("unmute", unmute, pass_args=True, filters=Filters.group)
-TEMPMUTE_HANDLER = CommandHandler(["tmute", "tempmute"], temp_mute, pass_args=True, filters=Filters.group)
-TEMP_NOMEDIA_HANDLER = CommandHandler(["trestrict", "temprestrict"], temp_nomedia, pass_args=True, filters=Filters.group)
-NOMEDIA_HANDLER = CommandHandler(["restrict", "nomedia"], nomedia, pass_args=True, filters=Filters.group)
-MEDIA_HANDLER = CommandHandler("unrestrict", media, pass_args=True, filters=Filters.group)
+MUTE_HANDLER = CommandHandler("mute", mute, pass_args=True, filters=Filters.chat_type.groups)
+UNMUTE_HANDLER = CommandHandler("unmute", unmute, pass_args=True, filters=Filters.chat_type.groups)
+TEMPMUTE_HANDLER = CommandHandler(["tmute", "tempmute"], temp_mute, pass_args=True, filters=Filters.chat_type.groups)
+TEMP_NOMEDIA_HANDLER = CommandHandler(["trestrict", "temprestrict"], temp_nomedia, pass_args=True, filters=Filters.chat_type.groups)
+NOMEDIA_HANDLER = CommandHandler(["restrict", "nomedia"], nomedia, pass_args=True, filters=Filters.chat_type.groups)
+MEDIA_HANDLER = CommandHandler("unrestrict", media, pass_args=True, filters=Filters.chat_type.groups)
 
 dispatcher.add_handler(MUTE_HANDLER)
 dispatcher.add_handler(UNMUTE_HANDLER)

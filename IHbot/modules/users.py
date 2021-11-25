@@ -248,7 +248,7 @@ __help__ = ""  # no help string
 __mod_name__ = "Users"
 
 BROADCAST_HANDLER = CommandHandler("broadcast", broadcast, filters=Filters.user(OWNER_ID))
-USER_HANDLER = MessageHandler(Filters.all & Filters.group, log_user)
+USER_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, log_user)
 CHATLIST_HANDLER = CommandHandler("chatlist", chats, filters=CustomFilters.sudo_filter)
 RESTRICT_GROUP_HANDLER = CommandHandler("restrict", restrict_group, pass_args=True, 
                                         filters=CustomFilters.sudo_filter)
