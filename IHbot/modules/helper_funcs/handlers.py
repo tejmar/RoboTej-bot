@@ -23,7 +23,7 @@ class CustomCommandHandler(tg.CommandHandler):
                     if self.filters is None:
                         res = True
                     elif isinstance(self.filters, list):
-                        res = any(func(message) for func in self.filters)
+                        res = any(func(update) for func in self.filters)
                     else:
                         res = self.filters(update)
 
