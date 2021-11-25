@@ -21,9 +21,7 @@ class CustomFilters(object):
         def __init__(self, mimetype):
             self.mime_type = mimetype
             self.name = "CustomFilters.mime_type({})".format(self.mime_type)
-
-        def __call__(self, update: Update):
-            BaseFilter.__call__(update)
+            self.__call__ = BaseFilter.__call__
 
         def filter(self, message: Message):
             return bool(message.document and message.document.mime_type == self.mime_type)
