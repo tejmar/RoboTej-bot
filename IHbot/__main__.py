@@ -454,7 +454,6 @@ def main():
                                   port=PORT,
                                   url_path=TOKEN,
                                   webhook_url=URL + TOKEN)
-            updater.bot.set_webhook()
 
     else:
         LOGGER.info("Using long polling.")
