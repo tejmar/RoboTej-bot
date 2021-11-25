@@ -1,19 +1,18 @@
 import re
-from glob import glob
-from os import system
 
 import aiml
 
 import telegram
 from telegram import Update, Bot
+from telegram.ext import MessageHandler
 
 from IHbot import dispatcher
-from IHbot.modules.disable import DisableAbleRegexHandler
 
 # The Kernel object is the public interface to
 # the AIML interpreter.
-alice = aiml.Kernel()
+from IHbot.modules.helper_funcs.filters import CustomFilters
 
+alice = aiml.Kernel()
 
 # Use the 'learn' method to load the contents
 # of an AIML file into the Kernel.
@@ -126,21 +125,23 @@ alice.learn('/app/IHbot/aiml/botdata/alice/religion.aiml')
 # alice.respond('load aiml b')
 print("finished learning")
 
+
 def words_are_greeting(msg):
-    return re.match("(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|fine,? (thanks|y?o?ur ?self)|what'?s? up|wh?addup|^yo[ $!.])", msg)
+    return re.match(
+        "(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|fine,? (thanks|y?o?ur ?self)|what'?s? up|wh?addup|^yo[ $!.])", msg)
+
 
 def converse(bot: Bot, update: Update):
-    # # empty string errors -_-
-    # if len(res.text) >= telegram.MAX_MESSAGE_LENGTH:
-    #     update.effective_message.reply_text("I lost my train of thought...")
-    # res = update.effective_message.reply_text()
     message = update.effective_message
-    if message.reply_to_message or words_are_greeting(message):
+    if (message.reply_to_message and message.reply_to_message.bot and message.reply_to_message.bot == bot) \
+            or words_are_greeting(message):
         bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
         try:
-            message.reply_to_message.reply_text(alice.respond(update.effective_message.text, update.effective_user.name))
+            message.reply_to_message.reply_text(
+                alice.respond(update.effective_message.text, update.effective_user.name))
         except:
             pass
+
 
 __help__ = """
  - Bot responds to certain messages conversationally
@@ -148,8 +149,6 @@ __help__ = """
 
 __mod_name__ = "Converse"
 
-
-CONVERSE_HANDLER = DisableAbleRegexHandler(r'^[^sS/?!.].*', converse, friendly="converse", run_async=True)
+CONVERSE_HANDLER = MessageHandler(CustomFilters.has_text, converse, run_async=True)
 
 dispatcher.add_handler(CONVERSE_HANDLER)
-
