@@ -1,4 +1,4 @@
-from telegram import Message
+from telegram import Message, Update
 from telegram.ext import BaseFilter
 
 from IHbot import SUPPORT_USERS, SUDO_USERS
@@ -21,6 +21,9 @@ class CustomFilters(object):
         def __init__(self, mimetype):
             self.mime_type = mimetype
             self.name = "CustomFilters.mime_type({})".format(self.mime_type)
+
+        def __call__(self, update: Update):
+            BaseFilter.__call__(update)
 
         def filter(self, message: Message):
             return bool(message.document and message.document.mime_type == self.mime_type)
