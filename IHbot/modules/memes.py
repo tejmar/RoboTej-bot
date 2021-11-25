@@ -133,10 +133,10 @@ __help__ = """
 __mod_name__ = "Memes"
 
 COPYPASTA_HANDLER = DisableAbleCommandHandler("copypasta", copypasta)
-COPYPASTA_ALIAS_HANDLER = DisableAbleCommandHandler("😂", copypasta)
+# COPYPASTA_ALIAS_HANDLER = DisableAbleCommandHandler("😂", copypasta)
 CLAPMOJI_HANDLER = DisableAbleCommandHandler("clapmoji", clapmoji)
-CLAPMOJI_ALIAS_HANDLER = DisableAbleCommandHandler("👏", clapmoji)
-BMOJI_HANDLER = DisableAbleCommandHandler("🅱", bmoji)
+# CLAPMOJI_ALIAS_HANDLER = DisableAbleCommandHandler("👏", clapmoji)
+# BMOJI_HANDLER = DisableAbleCommandHandler("🅱", bmoji)
 BMOJI_ALIAS_HANDLER = DisableAbleCommandHandler("bmoji", bmoji)
 OWO_HANDLER = DisableAbleCommandHandler("owo", owo)
 STRETCH_HANDLER = DisableAbleCommandHandler("stretch", stretch)
