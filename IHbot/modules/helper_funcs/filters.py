@@ -9,8 +9,14 @@ class CustomFilters(object):
         def filter(self, message: Message):
             return bool(message.from_user and message.from_user.id in SUPPORT_USERS)
 
-        def __call_(self, update: Update):
+        def _BaseFiler__call__(self, update: Update):
+            # BaseFilter.__call__(update)
             pass
+
+        def __Sudoers__call__(self, update: Update):
+            # BaseFilter.__call__(update)
+            pass
+
 
     support_filter = _Supporters()
 
