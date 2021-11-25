@@ -134,7 +134,7 @@ def words_are_greeting(msg):
 def converse(bot: Bot, update: Update):
     message = update.effective_message
     if (message.reply_to_message and message.reply_to_message.bot and message.reply_to_message.bot.id == bot.id) \
-            or words_are_greeting(message):
+            or words_are_greeting(message.text):
         bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
         try:
             message.reply_to_message.reply_text(
