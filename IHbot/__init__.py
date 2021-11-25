@@ -11,9 +11,9 @@ logging.basicConfig(
 
 LOGGER = logging.getLogger(__name__)
 
-# if version < 3.6, stop bot.
+# if version < 3.8, stop bot.
 if sys.version_info[0] < 3 or sys.version_info[1] < 6:
-    LOGGER.error("You MUST have a python version of at least 3.6! Multiple features depend on this. Bot quitting.")
+    LOGGER.error("You MUST have a python version of at least 3.8! Multiple features depend on this. Bot quitting.")
     quit(1)
 
 ENV = bool(os.environ.get('ENV', False))
@@ -45,10 +45,12 @@ if ENV:
 
     WEBHOOK = bool(os.environ.get('WEBHOOK', False))
     URL = os.environ.get('URL', "")  # Does not contain token
-    PORT = int(os.environ.get('PORT', 5000))
+    PORT = int(os.environ.get('PORT', 443))
     CERT_PATH = os.environ.get("CERT_PATH")
 
     DB_URI = os.environ.get('DATABASE_URL')
+    if DB_URI and DB_URI.startswith("postgres://"):
+        DB_URI = DB_URI.replace("postgres://", "postgresql://", 1)
     DONATION_LINK = os.environ.get('DONATION_LINK')
     LOAD = os.environ.get("LOAD", "").split()
     NO_LOAD = os.environ.get("NO_LOAD", "translation").split()

@@ -324,9 +324,9 @@ UNGMUTE_HANDLER = CommandHandler("ungmute", ungmute, pass_args=True,
 GMUTE_LIST = CommandHandler("gmutelist", gmutelist,
                            filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 
-GMUTE_STATUS = CommandHandler("gmutestat", gmutestat, pass_args=True, filters=Filters.group)
+GMUTE_STATUS = CommandHandler("gmutestat", gmutestat, pass_args=True, filters=Filters.chat_type.groups)
 
-GMUTE_ENFORCER = MessageHandler(Filters.all & Filters.group, enforce_gmute)
+GMUTE_ENFORCER = MessageHandler(Filters.all & Filters.chat_type.groups, enforce_gmute)
 
 dispatcher.add_handler(GMUTE_HANDLER)
 dispatcher.add_handler(UNGMUTE_HANDLER)

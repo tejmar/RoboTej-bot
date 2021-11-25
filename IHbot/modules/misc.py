@@ -493,10 +493,10 @@ INFO_HANDLER = DisableAbleCommandHandler("info", info, pass_args=True)
 
 PING_HANDLER = DisableAbleCommandHandler("ping", ping)
 ECHO_HANDLER = CommandHandler("echo", echo, filters=CustomFilters.sudo_filter)
-MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, filters=Filters.private)
+MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, filters=Filters.chat_type.private)
 
 STATS_HANDLER = CommandHandler("stats", stats, filters=CustomFilters.sudo_filter)
-GDPR_HANDLER = CommandHandler("gdpr", gdpr, filters=Filters.private)
+GDPR_HANDLER = CommandHandler("gdpr", gdpr, filters=Filters.chat_type.private)
 GPS_HANDLER = DisableAbleCommandHandler("gps", gps, pass_args=True)
 
 SHRUG_HANDLER = DisableAbleCommandHandler("shrug", shrug)
