@@ -1,22 +1,13 @@
-from telegram import Message, Update
-from telegram.ext import BaseFilter
+from telegram import Message
+from telegram.ext import BaseFilter, MessageFilter
 
 from IHbot import SUPPORT_USERS, SUDO_USERS
 from IHbot.modules.sql.users_sql import get_restriction
 
 class CustomFilters(object):
-    class _Supporters(BaseFilter):
+    class _Supporters(MessageFilter):
         def filter(self, message: Message):
             return bool(message.from_user and message.from_user.id in SUPPORT_USERS)
-
-        def _BaseFiler__call__(self, update: Update):
-            # BaseFilter.__call__(update)
-            pass
-
-        def __Sudoers__call__(self, update: Update):
-            # BaseFilter.__call__(update)
-            pass
-
 
     support_filter = _Supporters()
 
