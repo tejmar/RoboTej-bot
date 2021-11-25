@@ -10,4 +10,3 @@ pyowm
 spongemock
 geopy
 PyLyrics
-git+https://github.com/Calysto/aiml.git
