@@ -14,6 +14,7 @@ class CustomCommandHandler(tg.CommandHandler):
         if (isinstance(update, Update)
                 and (update.message or update.edited_message and self.allow_edited)):
             message = update.message or update.edited_message
+            print(update)
 
             if message.text and len(message.text) > 1:
                 fst_word = message.text_html.split(None, 1)[0]
