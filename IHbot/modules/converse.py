@@ -18,7 +18,7 @@ alice = aiml.Kernel()
 # Use the 'learn' method to load the contents
 # of an AIML file into the Kernel.
 print("started learning")
-with (open('/app/IHBot/std-startup.xml')) as f:
+with (open('/app/app.json')) as f:
     print(f)
     print("HEY LOOK EVERYBODY IT'S F")
 alice.learn("/app/IHBot/std-startup.xml")
