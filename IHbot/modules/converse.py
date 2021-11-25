@@ -4,7 +4,8 @@ import aiml
 
 import telegram
 from telegram import Update, Bot
-from telegram.ext import MessageHandler
+from telegram.ext import MessageHandler, Filters
+from telegram.ext.filters import MergedFilter, InvertedFilter
 
 from IHbot import dispatcher
 
@@ -150,6 +151,7 @@ __help__ = """
 
 __mod_name__ = "Converse"
 
-CONVERSE_HANDLER = MessageHandler(CustomFilters.has_text, converse, run_async=True)
+
+CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse, run_async=True)
 
 dispatcher.add_handler(CONVERSE_HANDLER)
