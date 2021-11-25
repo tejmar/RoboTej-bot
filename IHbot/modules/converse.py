@@ -134,12 +134,12 @@ def words_are_greeting(msg):
 def converse(bot: Bot, update: Update):
     message = update.effective_message
     if (message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == bot.id) \
-        or message.chat_id == bot.id \
+        or update.effective_chat.id == bot.id \
             or words_are_greeting(message.text):
         bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
         try:
             message.reply_text(
-                alice.respond(update.effective_message.text, update.effective_user.name))
+                alice.respond(update.effective_message.text, update.effective_user.id))
         except:
             pass
 
