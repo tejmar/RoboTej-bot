@@ -10,14 +10,14 @@ simple to use.
 
 Once you've setup your database and your configuration (see below) is complete, simply run:
 
-`python3.6 -m IHbot`
+`python3.8 -m IHbot`
 
 ## One click installation on Heroku for newbies (Click on the button below) !!
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## Setting up the bot (Read this before trying to use!):
-Please make sure to use python3.6, as I cannot guarantee everything will work as expected on older python versions!
-This is because markdown parsing is done by iterating through a dict, which are ordered by default in 3.6.
+Please make sure to use python3.8, as I cannot guarantee everything will work as expected on older python versions!
+This is because markdown parsing is done by iterating through a dict, which are ordered by default in 3.8.
 
 ### Configuration
 
@@ -87,7 +87,7 @@ Get your OpenWeatherMap API key [here](https://openweathermap.org/api) !!
 
 Install the necessary python dependencies by moving to the project directory and running:
 
-`pip3.6 install -r requirements.txt`.
+`pip3.8 install -r requirements.txt`.
 
 This will install all necessary python packages.
 
