@@ -126,7 +126,7 @@ def test(bot: Bot, update: Update):
 
 @run_async
 def start(bot: Bot, update: Update, args: List[str]):
-    bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
+    bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     if update.effective_chat.type == "private":
         if len(args) >= 1:
             if args[0].lower() == "help":
@@ -442,15 +442,19 @@ def main():
 
     if WEBHOOK:
         LOGGER.info("Using webhooks.")
-        updater.start_webhook(listen="0.0.0.0",
-                              port=PORT,
-                              url_path=TOKEN)
 
         if CERT_PATH:
-            updater.bot.set_webhook(url=URL + TOKEN,
-                                    certificate=open(CERT_PATH, 'rb'))
+            updater.start_webhook(listen="0.0.0.0",
+                                  port=PORT,
+                                  url_path=TOKEN,
+                                  webhook_url=URL + TOKEN,
+                                  certificate=open(CERT_PATH, 'rb'))
         else:
-            updater.bot.set_webhook(url=URL + TOKEN)
+            updater.start_webhook(listen="0.0.0.0",
+                                  port=PORT,
+                                  url_path=TOKEN,
+                                  webhook_url=URL + TOKEN)
+            updater.bot.set_webhook()
 
     else:
         LOGGER.info("Using long polling.")
