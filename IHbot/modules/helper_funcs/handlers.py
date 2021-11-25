@@ -14,7 +14,6 @@ class CustomCommandHandler(tg.CommandHandler):
         if (isinstance(update, Update)
                 and (update.message or update.edited_message and self.allow_edited)):
             message = update.message or update.edited_message
-            print(update)
 
             if message.text and len(message.text) > 1:
                 fst_word = message.text_html.split(None, 1)[0]
@@ -26,7 +25,7 @@ class CustomCommandHandler(tg.CommandHandler):
                     elif isinstance(self.filters, list):
                         res = any(func(message) for func in self.filters)
                     else:
-                        res = self.filters(message)
+                        res = self.filters(update)
 
                     return res and (command[0].lower() in self.command
                                     and command[1].lower() == message.bot.username.lower())
