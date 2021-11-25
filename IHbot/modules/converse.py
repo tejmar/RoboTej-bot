@@ -20,6 +20,7 @@ alice = aiml.Kernel()
 print("started learning")
 with (open('/app/app.json')) as f:
     print(f)
+    print(system('ls /app'))
     print("HEY LOOK EVERYBODY IT'S F")
 alice.learn("/app/IHBot/std-startup.xml")
 alice.learn('/app/IHBot/aiml/botdata/standard/std-turing.aiml')
