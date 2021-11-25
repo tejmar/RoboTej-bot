@@ -6,7 +6,6 @@ import aiml
 
 import telegram
 from telegram import Update, Bot
-from telegram.ext import run_async
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleRegexHandler
@@ -19,6 +18,7 @@ alice = aiml.Kernel()
 # Use the 'learn' method to load the contents
 # of an AIML file into the Kernel.
 print("started learning")
+print(system('ls IHBot/aiml'))
 alice.learn("/app/IHBot/std-startup.xml")
 alice.learn('/app/IHBot/aiml/botdata/standard/std-turing.aiml')
 alice.learn('/app/IHBot/aiml/botdata/standard/std-hello.aiml')
