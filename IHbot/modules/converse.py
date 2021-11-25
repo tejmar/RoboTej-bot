@@ -1,5 +1,6 @@
 import re
 from glob import glob
+from os import system
 
 import aiml
 
@@ -141,7 +142,7 @@ def converse(bot: Bot, update: Update):
         try:
             message.reply_to_message.reply_text(alice.respond(update.effective_message.text, update.effective_user.name))
         except:
-            print(glob(message))
+            print(system("ls && pwd"))
             pass
 
 __help__ = """
