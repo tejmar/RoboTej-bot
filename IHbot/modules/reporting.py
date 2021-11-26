@@ -1,9 +1,10 @@
 import html
-from typing import Optional, List
+from typing import Optional
 
-from telegram import Message, Chat, Update, Bot, User, ParseMode
+from certifi.__main__ import args
+from telegram import Message, Chat, Update, User, ParseMode
 from telegram.error import BadRequest, Unauthorized
-from telegram.ext import CommandHandler, run_async, Filters, MessageHandler
+from telegram.ext import CommandHandler, Filters, MessageHandler, CallbackContext
 from telegram.utils.helpers import mention_html
 
 from IHbot import dispatcher, LOGGER
@@ -14,9 +15,8 @@ from IHbot.modules.sql import reporting_sql as sql
 REPORT_GROUP = 5
 
 
-@run_async
 @user_admin
-def report_setting(bot: Bot, update: Update, args: List[str] = None):
+def report_setting(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
 
@@ -48,10 +48,9 @@ def report_setting(bot: Bot, update: Update, args: List[str] = None):
                            parse_mode=ParseMode.MARKDOWN)
 
 
-@run_async
 @user_not_admin
 @loggable
-def report(bot: Bot, update: Update) -> str:
+def report(update: Update, context: CallbackContext) -> str:
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
@@ -89,7 +88,7 @@ def report(bot: Bot, update: Update) -> str:
 
             if sql.user_should_report(admin.user.id):
                 try:
-                    bot.send_message(admin.user.id, msg + link, parse_mode=ParseMode.HTML)
+                    context.bot.send_message(admin.user.id, msg + link, parse_mode=ParseMode.HTML)
 
                     if should_forward:
                         message.reply_to_message.forward(admin.user.id)
@@ -101,10 +100,10 @@ def report(bot: Bot, update: Update) -> str:
                     pass
                 except BadRequest as excp:  # TODO: cleanup exceptions
                     LOGGER.exception("Exception while reporting user")
-                    
+
         message.reply_to_message.reply_text("{} reported the message to the admins.".
                                             format(mention_html(user.id, user.first_name)),
-                                            parse_mode = ParseMode.HTML)
+                                            parse_mode=ParseMode.HTML)
         return msg
 
     return ""
@@ -137,9 +136,9 @@ NOTE: neither of these will get triggered if used by admins
    - If in chat, toggles that chat's status.
 """
 
-REPORT_HANDLER = CommandHandler("report", report, filters=Filters.chat_type.groups)
-SETTING_HANDLER = CommandHandler("reports", report_setting, pass_args=True)
-ADMIN_REPORT_HANDLER = MessageHandler(Filters.regex("(?i)@admin(s)?"), report)
+REPORT_HANDLER = CommandHandler("report", report, filters=Filters.chat_type.groups, run_async=True)
+SETTING_HANDLER = CommandHandler("reports", report_setting, pass_args=True, run_async=True)
+ADMIN_REPORT_HANDLER = MessageHandler(Filters.regex("(?i)@admin(s)?"), report, run_async=True)
 
 dispatcher.add_handler(REPORT_HANDLER, REPORT_GROUP)
 dispatcher.add_handler(ADMIN_REPORT_HANDLER, REPORT_GROUP)

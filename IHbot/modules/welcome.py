@@ -1,22 +1,24 @@
-import html, time
-from typing import Optional, List
+import html
+import time
+from typing import Optional
 
-from telegram import Message, Chat, Update, Bot, User
+from certifi.__main__ import args
+from telegram import Message, Chat, Update, User
 from telegram import ParseMode, InlineKeyboardMarkup
 from telegram.error import BadRequest
-from telegram.ext import MessageHandler, Filters, CommandHandler, run_async
+from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackContext
 from telegram.utils.helpers import mention_markdown, mention_html, escape_markdown
 
 import IHbot.modules.sql.welcome_sql as sql
-from IHbot.modules.helper_funcs import cas_api as cas
-from IHbot.modules.sql.safemode_sql import is_safemoded
 from IHbot import dispatcher, OWNER_ID, LOGGER
+from IHbot.modules.helper_funcs import cas_api as cas
 from IHbot.modules.helper_funcs.chat_status import user_admin, is_user_ban_protected, can_delete
 from IHbot.modules.helper_funcs.misc import build_keyboard, revert_buttons
 from IHbot.modules.helper_funcs.msg_types import get_welcome_type
 from IHbot.modules.helper_funcs.string_handling import markdown_parser, \
     escape_invalid_curly_brackets
 from IHbot.modules.log_channel import loggable
+from IHbot.modules.sql.safemode_sql import is_safemoded
 
 VALID_WELCOME_FORMATTERS = ['first', 'last', 'fullname', 'username', 'id', 'count', 'chatname', 'mention']
 
@@ -79,10 +81,10 @@ def send(update, message, keyboard, backup_message):
     return msg
 
 
-@run_async
-def new_member(bot: Bot, update: Update):
+def new_member(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     new_members = update.effective_message.new_chat_members
+    bot = context.bot
 
     for mems in new_members:
         if is_user_ban_protected(chat, mems.id, chat.get_member(mems.id)):
@@ -104,7 +106,8 @@ def new_member(bot: Bot, update: Update):
                                          can_send_other_messages=False, can_add_web_page_previews=False,
                                          until_date=(int(time.time() + 24 * 60 * 60 * 365 * 100)))
                 LOGGER.warning(update)
-                LOGGER.info("INFO: TOTALLY muting user %s for 100 years in chat %s (%s) due to CAS saying: %s", mems.id, chat.title,
+                LOGGER.info("INFO: TOTALLY muting user %s for 100 years in chat %s (%s) due to CAS saying: %s", mems.id,
+                            chat.title,
                             chat.id,
                             cas.offenses(cas_result))
             except BadRequest as excp:
@@ -169,7 +172,7 @@ def new_member(bot: Bot, update: Update):
 
                 sent = send(update, res, keyboard,
                             sql.DEFAULT_WELCOME.format(first=first_name))  # type: Optional[Message]
-            delete_join(bot, update)
+            delete_join(update, context)
 
         prev_welc = sql.get_clean_pref(chat.id)
         if prev_welc:
@@ -182,10 +185,10 @@ def new_member(bot: Bot, update: Update):
                 sql.set_clean_welcome(chat.id, sent.message_id)
 
 
-@run_async
-def left_member(bot: Bot, update: Update):
+def left_member(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     should_goodbye, cust_goodbye, goodbye_type = sql.get_gdbye_pref(chat.id)
+    bot = context.bot
     if should_goodbye:
         left_mem = update.effective_message.left_chat_member
         if left_mem:
@@ -233,9 +236,8 @@ def left_member(bot: Bot, update: Update):
             send(update, res, keyboard, sql.DEFAULT_GOODBYE)
 
 
-@run_async
 @user_admin
-def welcome(bot: Bot, update: Update, args: List[str] = None):
+def welcome(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     # if no args, show current replies.
     if len(args) == 0 or args[0].lower() == "noformat":
@@ -280,9 +282,8 @@ def welcome(bot: Bot, update: Update, args: List[str] = None):
             update.effective_message.reply_text("I understand 'on/yes' or 'off/no' only!")
 
 
-@run_async
 @user_admin
-def goodbye(bot: Bot, update: Update, args: List[str] = None):
+def goodbye(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
 
     if len(args) == 0 or args[0] == "noformat":
@@ -327,10 +328,9 @@ def goodbye(bot: Bot, update: Update, args: List[str] = None):
             update.effective_message.reply_text("I understand 'on/yes' or 'off/no' only!")
 
 
-@run_async
 @user_admin
 @loggable
-def set_welcome(bot: Bot, update: Update) -> str:
+def set_welcome(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
@@ -351,10 +351,9 @@ def set_welcome(bot: Bot, update: Update) -> str:
                                                mention_html(user.id, user.first_name))
 
 
-@run_async
 @user_admin
 @loggable
-def reset_welcome(bot: Bot, update: Update) -> str:
+def reset_welcome(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     sql.set_custom_welcome(chat.id, sql.DEFAULT_WELCOME, sql.Types.TEXT)
@@ -366,10 +365,9 @@ def reset_welcome(bot: Bot, update: Update) -> str:
                                                             mention_html(user.id, user.first_name))
 
 
-@run_async
 @user_admin
 @loggable
-def set_goodbye(bot: Bot, update: Update) -> str:
+def set_goodbye(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
@@ -388,10 +386,9 @@ def set_goodbye(bot: Bot, update: Update) -> str:
                                                mention_html(user.id, user.first_name))
 
 
-@run_async
 @user_admin
 @loggable
-def reset_goodbye(bot: Bot, update: Update) -> str:
+def reset_goodbye(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     sql.set_custom_gdbye(chat.id, sql.DEFAULT_GOODBYE, sql.Types.TEXT)
@@ -403,10 +400,9 @@ def reset_goodbye(bot: Bot, update: Update) -> str:
                                                  mention_html(user.id, user.first_name))
 
 
-@run_async
 @user_admin
 @loggable
-def clean_welcome(bot: Bot, update: Update, args: List[str] = None) -> str:
+def clean_welcome(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
 
@@ -440,10 +436,9 @@ def clean_welcome(bot: Bot, update: Update, args: List[str] = None) -> str:
         return ""
 
 
-@run_async
 @user_admin
 @loggable
-def del_joined(bot: Bot, update: Update, args: List[str] = None) -> str:
+def del_joined(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
 
@@ -477,10 +472,10 @@ def del_joined(bot: Bot, update: Update, args: List[str] = None) -> str:
         return ""
 
 
-@run_async
-def delete_join(bot: Bot, update: Update):
+def delete_join(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     join = update.effective_message.new_chat_members
+    bot = context.bot
     if can_delete(chat, bot.id):
         del_join = sql.get_del_pref(chat.id)
         if del_join:
@@ -512,9 +507,8 @@ WELC_HELP_TXT = "Your group's welcome/goodbye messages can be personalised in mu
                 "replying to the desired media, and calling /setwelcome.".format(dispatcher.bot.username)
 
 
-@run_async
 @user_admin
-def welcome_help(bot: Bot, update: Update):
+def welcome_help(update: Update, context: CallbackContext):
     update.effective_message.reply_text(WELC_HELP_TXT, parse_mode=ParseMode.MARKDOWN)
 
 
@@ -561,17 +555,17 @@ __help__ = """
 
 __mod_name__ = "Welcomes/Goodbyes"
 
-NEW_MEM_HANDLER = MessageHandler(Filters.status_update.new_chat_members, new_member)
-LEFT_MEM_HANDLER = MessageHandler(Filters.status_update.left_chat_member, left_member)
-WELC_PREF_HANDLER = CommandHandler("welcome", welcome, pass_args=True, filters=Filters.chat_type.groups)
-GOODBYE_PREF_HANDLER = CommandHandler("goodbye", goodbye, pass_args=True, filters=Filters.chat_type.groups)
-SET_WELCOME = CommandHandler("setwelcome", set_welcome, filters=Filters.chat_type.groups)
-SET_GOODBYE = CommandHandler("setgoodbye", set_goodbye, filters=Filters.chat_type.groups)
-RESET_WELCOME = CommandHandler("resetwelcome", reset_welcome, filters=Filters.chat_type.groups)
-RESET_GOODBYE = CommandHandler("resetgoodbye", reset_goodbye, filters=Filters.chat_type.groups)
-CLEAN_WELCOME = CommandHandler("cleanwelcome", clean_welcome, pass_args=True, filters=Filters.chat_type.groups)
-DEL_JOINED = CommandHandler(["rmjoin", "cleanservice"], del_joined, pass_args=True, filters=Filters.chat_type.groups)
-WELCOME_HELP = CommandHandler("welcomehelp", welcome_help)
+NEW_MEM_HANDLER = MessageHandler(Filters.status_update.new_chat_members, new_member, run_async=True)
+LEFT_MEM_HANDLER = MessageHandler(Filters.status_update.left_chat_member, left_member, run_async=True)
+WELC_PREF_HANDLER = CommandHandler("welcome", welcome, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+GOODBYE_PREF_HANDLER = CommandHandler("goodbye", goodbye, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+SET_WELCOME = CommandHandler("setwelcome", set_welcome, filters=Filters.chat_type.groups, run_async=True)
+SET_GOODBYE = CommandHandler("setgoodbye", set_goodbye, filters=Filters.chat_type.groups, run_async=True)
+RESET_WELCOME = CommandHandler("resetwelcome", reset_welcome, filters=Filters.chat_type.groups, run_async=True)
+RESET_GOODBYE = CommandHandler("resetgoodbye", reset_goodbye, filters=Filters.chat_type.groups, run_async=True)
+CLEAN_WELCOME = CommandHandler("cleanwelcome", clean_welcome, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+DEL_JOINED = CommandHandler(["rmjoin", "cleanservice"], del_joined, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+WELCOME_HELP = CommandHandler("welcomehelp", welcome_help, run_async=True)
 
 dispatcher.add_handler(NEW_MEM_HANDLER)
 dispatcher.add_handler(LEFT_MEM_HANDLER)

@@ -1,10 +1,9 @@
 import pyowm
-from telegram.ext import run_async
 
-from IHbot import dispatcher, updater, API_WEATHER, BAN_STICKER
+from IHbot import dispatcher, API_WEATHER, BAN_STICKER
 from IHbot.modules.disable import DisableAbleCommandHandler
 
-@run_async
+
 def weather(bot, update, args):
     if len(args) == 0:
         update.effective_message.reply_text("Write a location to check the weather.")
@@ -21,38 +20,38 @@ def weather(bot, update, args):
         observation = owm.weather_at_place(location)
         getloc = observation.get_location()
         thelocation = getloc.get_name()
-        if thelocation == None:
+        if thelocation is None:
             thelocation = "Unknown"
         theweather = observation.get_weather()
         temperature = theweather.get_temperature(unit='celsius').get('temp')
-        if temperature == None:
+        if temperature is None:
             temperature = "Unknown"
 
         # Weather symbols
         status = ""
         status_now = theweather.get_weather_code()
-        if status_now < 232: # Rain storm
+        if status_now < 232:  # Rain storm
             status += "⛈️ "
-        elif status_now < 321: # Drizzle
+        elif status_now < 321:  # Drizzle
             status += "🌧️ "
-        elif status_now < 504: # Light rain
+        elif status_now < 504:  # Light rain
             status += "🌦️ "
-        elif status_now < 531: # Cloudy rain
-             status += "⛈️ "
-        elif status_now < 622: # Snow
+        elif status_now < 531:  # Cloudy rain
+            status += "⛈️ "
+        elif status_now < 622:  # Snow
             status += "🌨️ "
-        elif status_now < 781: # Atmosphere
+        elif status_now < 781:  # Atmosphere
             status += "🌪️ "
-        elif status_now < 800: # Bright
+        elif status_now < 800:  # Bright
             status += "🌤️ "
-        elif status_now < 801: # A little cloudy
-             status += "⛅️ "
-        elif status_now < 804: # Cloudy
-             status += "☁️ "
+        elif status_now < 801:  # A little cloudy
+            status += "⛅️ "
+        elif status_now < 804:  # Cloudy
+            status += "☁️ "
         status += theweather._detailed_status
 
         update.message.reply_text("Today in {} is being {}, around {}°C.\n".format(thelocation,
-                status, temperature))
+                                                                                   status, temperature))
 
     except pyowm.exceptions.not_found_error.NotFoundError:
         update.effective_message.reply_text("Sorry, location not found.")
@@ -64,6 +63,6 @@ __help__ = """
 
 __mod_name__ = "Weather"
 
-WEATHER_HANDLER = DisableAbleCommandHandler("weather", weather, pass_args=True)
+WEATHER_HANDLER = DisableAbleCommandHandler("weather", weather, pass_args=True, run_async=True)
 
 dispatcher.add_handler(WEATHER_HANDLER)

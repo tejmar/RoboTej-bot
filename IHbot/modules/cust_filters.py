@@ -3,9 +3,9 @@ from typing import Optional
 
 import telegram
 from telegram import ParseMode, InlineKeyboardMarkup, Message, Chat
-from telegram import Update, Bot
+from telegram import Update
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, DispatcherHandlerStop, run_async
+from telegram.ext import CommandHandler, MessageHandler, DispatcherHandlerStop, CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher, LOGGER
@@ -21,8 +21,7 @@ HANDLER_GROUP = 10
 BASIC_FILTER_STRING = "*Filters in this chat:*\n"
 
 
-@run_async
-def list_handlers(bot: Bot, update: Update):
+def list_handlers(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     all_handlers = sql.get_chat_triggers(chat.id)
 
@@ -45,7 +44,7 @@ def list_handlers(bot: Bot, update: Update):
 
 # NOT ASYNC BECAUSE DISPATCHER HANDLER RAISED
 @user_admin
-def filters(bot: Bot, update: Update):
+def filters(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
     args = msg.text.split(None, 1)  # use python's maxsplit to separate Cmd, keyword, and reply_text
@@ -119,7 +118,7 @@ def filters(bot: Bot, update: Update):
 
 # NOT ASYNC BECAUSE DISPATCHER HANDLER RAISED
 @user_admin
-def stop_filter(bot: Bot, update: Update):
+def stop_filter(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     args = update.effective_message.text.split(None, 1)
 
@@ -141,8 +140,7 @@ def stop_filter(bot: Bot, update: Update):
     update.effective_message.reply_text("That's not a current filter - run /filters for all active filters.")
 
 
-@run_async
-def reply_filter(bot: Bot, update: Update):
+def reply_filter(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
     to_match = extract_text(message)
@@ -181,9 +179,9 @@ def reply_filter(bot: Bot, update: Update):
                                            "doesn't support buttons for some protocols, such as tg://. Please try "
                                            "again, or ask in @MarieSupport for help.")
                     elif excp.message == "Reply message not found":
-                        bot.send_message(chat.id, filt.reply, parse_mode=ParseMode.MARKDOWN,
-                                         disable_web_page_preview=True,
-                                         reply_markup=keyboard)
+                        context.bot.send_message(chat.id, filt.reply, parse_mode=ParseMode.MARKDOWN,
+                                                 disable_web_page_preview=True,
+                                                 reply_markup=keyboard)
                     else:
                         message.reply_text("This note could not be sent, as it is incorrectly formatted. Ask in "
                                            "@MarieSupport if you can't figure out why!")
@@ -224,8 +222,8 @@ __mod_name__ = "Filters"
 
 FILTER_HANDLER = CommandHandler("filter", filters)
 STOP_HANDLER = CommandHandler("stop", stop_filter)
-LIST_HANDLER = DisableAbleCommandHandler("filters", list_handlers, admin_ok=True)
-CUST_FILTER_HANDLER = MessageHandler(CustomFilters.has_text, reply_filter)
+LIST_HANDLER = DisableAbleCommandHandler("filters", list_handlers, admin_ok=True, run_async=True)
+CUST_FILTER_HANDLER = MessageHandler(CustomFilters.has_text, reply_filter, run_async=True)
 
 dispatcher.add_handler(FILTER_HANDLER)
 dispatcher.add_handler(STOP_HANDLER)

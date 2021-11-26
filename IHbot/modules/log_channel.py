@@ -8,7 +8,7 @@ FILENAME = __name__.rsplit(".", 1)[-1]
 if is_module_loaded(FILENAME):
     from telegram import Bot, Update, ParseMode, Message, Chat
     from telegram.error import BadRequest, Unauthorized
-    from telegram.ext import CommandHandler, run_async
+    from telegram.ext import CommandHandler, CallbackContext
     from telegram.utils.helpers import escape_markdown
 
     from IHbot import dispatcher, LOGGER
@@ -18,8 +18,8 @@ if is_module_loaded(FILENAME):
 
     def loggable(func):
         @wraps(func)
-        def log_action(bot: Bot, update: Update, *args, **kwargs):
-            result = func(bot, update, *args, **kwargs)
+        def log_action(update: Update, context: CallbackContext):
+            result = func(update=update, context=context)
             chat = update.effective_chat  # type: Optional[Chat]
             message = update.effective_message  # type: Optional[Message]
             if result:
@@ -29,7 +29,7 @@ if is_module_loaded(FILENAME):
                                                                                            message.message_id)
                 log_chat = sql.get_chat_log_channel(chat.id)
                 if log_chat:
-                    send_log(bot, log_chat, chat.id, result)
+                    send_log(context.bot, log_chat, chat.id, result)
             elif result == "":
                 pass
             else:
@@ -55,15 +55,14 @@ if is_module_loaded(FILENAME):
                 bot.send_message(log_chat_id, result + "\n\nFormatting has been disabled due to an unexpected error.")
 
 
-    @run_async
     @user_admin
-    def logging(bot: Bot, update: Update):
+    def logging(update: Update, context: CallbackContext):
         message = update.effective_message  # type: Optional[Message]
         chat = update.effective_chat  # type: Optional[Chat]
 
         log_channel = sql.get_chat_log_channel(chat.id)
         if log_channel:
-            log_channel_info = bot.get_chat(log_channel)
+            log_channel_info = context.bot.get_chat(log_channel)
             message.reply_text(
                 "This group has all it's logs sent to: {} (`{}`)".format(escape_markdown(log_channel_info.title),
                                                                          log_channel),
@@ -73,9 +72,9 @@ if is_module_loaded(FILENAME):
             message.reply_text("No log channel has been set for this group!")
 
 
-    @run_async
     @user_admin
-    def setlog(bot: Bot, update: Update):
+    def setlog(update: Update, context: CallbackContext):
+        bot = context.bot
         message = update.effective_message  # type: Optional[Message]
         chat = update.effective_chat  # type: Optional[Chat]
         if chat.type == chat.CHANNEL:
@@ -110,15 +109,14 @@ if is_module_loaded(FILENAME):
                                " - forward the /setlog to the group\n")
 
 
-    @run_async
     @user_admin
-    def unsetlog(bot: Bot, update: Update):
+    def unsetlog(update: Update, context: CallbackContext):
         message = update.effective_message  # type: Optional[Message]
         chat = update.effective_chat  # type: Optional[Chat]
 
         log_channel = sql.stop_chat_logging(chat.id)
         if log_channel:
-            bot.send_message(log_channel, "Channel has been unlinked from {}".format(chat.title))
+            context.bot.send_message(log_channel, "Channel has been unlinked from {}".format(chat.title))
             message.reply_text("Log channel has been un-set.")
 
         else:
@@ -156,9 +154,9 @@ Setting the log channel is done by:
 
     __mod_name__ = "Log Channels"
 
-    LOG_HANDLER = CommandHandler("logchannel", logging)
-    SET_LOG_HANDLER = CommandHandler("setlog", setlog)
-    UNSET_LOG_HANDLER = CommandHandler("unsetlog", unsetlog)
+    LOG_HANDLER = CommandHandler("logchannel", logging, run_async=True)
+    SET_LOG_HANDLER = CommandHandler("setlog", setlog, run_async=True)
+    UNSET_LOG_HANDLER = CommandHandler("unsetlog", unsetlog, run_async=True)
 
     dispatcher.add_handler(LOG_HANDLER)
     dispatcher.add_handler(SET_LOG_HANDLER)

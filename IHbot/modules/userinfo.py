@@ -1,9 +1,10 @@
 import html
-from typing import Optional, List
+from typing import Optional
 
-from telegram import Message, Update, Bot, User
+from certifi.__main__ import args
+from telegram import Message, Update, User
 from telegram import ParseMode, MAX_MESSAGE_LENGTH
-from telegram.ext.dispatcher import run_async
+from telegram.ext import CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 import IHbot.modules.sql.userinfo_sql as sql
@@ -12,13 +13,12 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 from IHbot.modules.helper_funcs.extraction import extract_user
 
 
-@run_async
-def about_me(bot: Bot, update: Update, args: List[str] = None):
+def about_me(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     user_id = extract_user(message, args)
 
     if user_id:
-        user = bot.get_chat(user_id)
+        user = context.bot.get_chat(user_id)
     else:
         user = message.from_user
 
@@ -34,8 +34,7 @@ def about_me(bot: Bot, update: Update, args: List[str] = None):
         update.effective_message.reply_text("You haven't set an info message about yourself yet!")
 
 
-@run_async
-def set_about_me(bot: Bot, update: Update):
+def set_about_me(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     user_id = message.from_user.id
     text = message.text
@@ -49,13 +48,12 @@ def set_about_me(bot: Bot, update: Update):
                 "Your info needs to be under {} characters! You have {}.".format(MAX_MESSAGE_LENGTH // 4, len(info[1])))
 
 
-@run_async
-def about_bio(bot: Bot, update: Update, args: List[str] = None):
+def about_bio(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
 
     user_id = extract_user(message, args)
     if user_id:
-        user = bot.get_chat(user_id)
+        user = context.bot.get_chat(user_id)
     else:
         user = message.from_user
 
@@ -71,8 +69,7 @@ def about_bio(bot: Bot, update: Update, args: List[str] = None):
         update.effective_message.reply_text("You haven't had a bio set about yourself yet!")
 
 
-@run_async
-def set_about_bio(bot: Bot, update: Update):
+def set_about_bio(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     sender = update.effective_user  # type: Optional[User]
     if message.reply_to_message:
@@ -81,7 +78,7 @@ def set_about_bio(bot: Bot, update: Update):
         if user_id == message.from_user.id:
             message.reply_text("Ha, you can't set your own bio! You're at the mercy of others here...")
             return
-        elif user_id == bot.id and sender.id not in SUDO_USERS:
+        elif user_id == context.bot.id and sender.id not in SUDO_USERS:
             message.reply_text("Erm... yeah, I only trust sudo users to set my bio.")
             return
 
@@ -126,11 +123,11 @@ __help__ = """
 
 __mod_name__ = "Bios and Abouts"
 
-SET_BIO_HANDLER = DisableAbleCommandHandler("setbio", set_about_bio)
-GET_BIO_HANDLER = DisableAbleCommandHandler("bio", about_bio, pass_args=True)
+SET_BIO_HANDLER = DisableAbleCommandHandler("setbio", set_about_bio, run_async=True)
+GET_BIO_HANDLER = DisableAbleCommandHandler("bio", about_bio, pass_args=True, run_async=True)
 
-SET_ABOUT_HANDLER = DisableAbleCommandHandler("setme", set_about_me)
-GET_ABOUT_HANDLER = DisableAbleCommandHandler("me", about_me, pass_args=True)
+SET_ABOUT_HANDLER = DisableAbleCommandHandler("setme", set_about_me, run_async=True)
+GET_ABOUT_HANDLER = DisableAbleCommandHandler("me", about_me, pass_args=True, run_async=True)
 
 dispatcher.add_handler(SET_BIO_HANDLER)
 dispatcher.add_handler(GET_BIO_HANDLER)

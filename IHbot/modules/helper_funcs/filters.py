@@ -4,6 +4,7 @@ from telegram.ext import MessageFilter
 from IHbot import SUPPORT_USERS, SUDO_USERS
 from IHbot.modules.sql.users_sql import get_restriction
 
+
 class CustomFilters(object):
     class _Supporters(MessageFilter):
         def filter(self, message: Message):

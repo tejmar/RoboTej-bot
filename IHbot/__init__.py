@@ -121,5 +121,5 @@ from IHbot.modules.helper_funcs.handlers import CustomCommandHandler, CustomRege
 # make sure the regex handler can take extra kwargs
 tg.RegexHandler = CustomRegexHandler
 
-if ALLOW_EXCL:
-    tg.CommandHandler = CustomCommandHandler
+# if ALLOW_EXCL:
+tg.CommandHandler = CustomCommandHandler

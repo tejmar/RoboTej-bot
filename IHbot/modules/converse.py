@@ -1,17 +1,15 @@
 import re
 
 import aiml
-
 import telegram
-from telegram import Update, Bot
-from telegram.ext import MessageHandler, Filters
+from telegram import Update
+from telegram.ext import MessageHandler, Filters, CallbackContext
 from telegram.ext.filters import MergedFilter, InvertedFilter
 
 from IHbot import dispatcher
 
 # The Kernel object is the public interface to
 # the AIML interpreter.
-from IHbot.modules.helper_funcs.filters import CustomFilters
 
 alice = aiml.Kernel()
 
@@ -132,12 +130,13 @@ def words_are_greeting(msg):
         "(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|fine,? (thanks|y?o?ur ?self)|what'?s? up|wh?addup|^yo[ $!.])", msg)
 
 
-def converse(bot: Bot, update: Update):
+def converse(update: Update, context: CallbackContext):
     message = update.effective_message
-    if (message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == bot.id) \
-        or update.effective_chat.id == update.effective_user.id \
+    if (
+            message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == context.bot.id) \
+            or update.effective_chat.id == update.effective_user.id \
             or words_are_greeting(message.text):
-        bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
+        context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
         try:
             message.reply_text(
                 alice.respond(update.effective_message.text, update.effective_user.id))
@@ -150,7 +149,6 @@ __help__ = """
 """.format(telegram.MAX_MESSAGE_LENGTH)
 
 __mod_name__ = "Converse"
-
 
 CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse, run_async=True)
 
