@@ -82,6 +82,7 @@ def set_flood(bot: Bot, update: Update, args: List[str] = None) -> str:
                 return ""
 
             else:
+                message.reply_text("trying to set anitflood")
                 sql.set_flood(chat.id, amount)
                 message.reply_text("Antiflood has been updated and set to {}".format(amount))
                 return "<b>{}:</b>" \
