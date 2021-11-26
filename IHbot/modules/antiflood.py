@@ -55,41 +55,44 @@ def check_flood(bot: Bot, update: Update) -> str:
 @can_restrict
 @loggable
 def set_flood(bot: Bot, update: Update, args: List[str] = None) -> str:
-    chat = update.effective_chat  # type: Optional[Chat]
-    user = update.effective_user  # type: Optional[User]
-    message = update.effective_message  # type: Optional[Message]
+    try:
+        chat = update.effective_chat  # type: Optional[Chat]
+        user = update.effective_user  # type: Optional[User]
+        message = update.effective_message  # type: Optional[Message]
 
-    if args and len(args) >= 1:
-        val = args[0].lower()
-        if val == "off" or val == "no" or val == "0":
-            sql.set_flood(chat.id, 0)
-            message.reply_text("Antiflood has been disabled.")
-
-        elif val.isdigit():
-            amount = int(val)
-            if amount <= 0:
+        if args and len(args) >= 1:
+            val = args[0].lower()
+            if val == "off" or val == "no" or val == "0":
                 sql.set_flood(chat.id, 0)
                 message.reply_text("Antiflood has been disabled.")
-                return "<b>{}:</b>" \
-                       "\n#SETFLOOD" \
-                       "\n<b>Admin:</b> {}" \
-                       "\nDisabled antiflood.".format(html.escape(chat.title), mention_html(user.id, user.first_name))
 
-            elif amount < 3:
-                message.reply_text("Antiflood has to be either 0 (disabled), or a number bigger than 3!")
-                return ""
+            elif val.isdigit():
+                amount = int(val)
+                if amount <= 0:
+                    sql.set_flood(chat.id, 0)
+                    message.reply_text("Antiflood has been disabled.")
+                    return "<b>{}:</b>" \
+                           "\n#SETFLOOD" \
+                           "\n<b>Admin:</b> {}" \
+                           "\nDisabled antiflood.".format(html.escape(chat.title), mention_html(user.id, user.first_name))
+
+                elif amount < 3:
+                    message.reply_text("Antiflood has to be either 0 (disabled), or a number bigger than 3!")
+                    return ""
+
+                else:
+                    sql.set_flood(chat.id, amount)
+                    message.reply_text("Antiflood has been updated and set to {}".format(amount))
+                    return "<b>{}:</b>" \
+                           "\n#SETFLOOD" \
+                           "\n<b>Admin:</b> {}" \
+                           "\nSet antiflood to <code>{}</code>.".format(html.escape(chat.title),
+                                                                        mention_html(user.id, user.first_name), amount)
 
             else:
-                sql.set_flood(chat.id, amount)
-                message.reply_text("Antiflood has been updated and set to {}".format(amount))
-                return "<b>{}:</b>" \
-                       "\n#SETFLOOD" \
-                       "\n<b>Admin:</b> {}" \
-                       "\nSet antiflood to <code>{}</code>.".format(html.escape(chat.title),
-                                                                    mention_html(user.id, user.first_name), amount)
-
-        else:
-            message.reply_text("Unrecognised argument - please use a number, 'off', or 'no'.")
+                message.reply_text("Unrecognised argument - please use a number, 'off', or 'no'.")
+    except Exception as e:
+        print(e)
 
     return ""
 
