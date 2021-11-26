@@ -49,7 +49,7 @@ def paste(bot: Bot, update: Update, args: List[str] = None):
 def get_paste_content(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
-    if len(args) >= 1:
+    if args and len(args) >= 1:
         key = args[0]
     else:
         message.reply_text("Please supply a paste key!")
@@ -82,7 +82,7 @@ def get_paste_content(bot: Bot, update: Update, args: List[str] = None):
 def get_paste_stats(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
-    if len(args) >= 1:
+    if args and len(args) >= 1:
         key = args[0]
     else:
         message.reply_text("Please supply a paste key!")

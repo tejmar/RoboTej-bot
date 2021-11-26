@@ -13,7 +13,7 @@ from IHbot.modules.sql import rss_sql as sql
 def show_url(bot, update, args):
     tg_chat_id = str(update.effective_chat.id)
 
-    if len(args) >= 1:
+    if args and len(args) >= 1:
         tg_feed_link = args[0]
         link_processed = parse(tg_feed_link)
 
@@ -73,7 +73,7 @@ def list_urls(bot, update):
 
 @user_admin
 def add_url(bot, update, args):
-    if len(args) >= 1:
+    if args and len(args) >= 1:
         chat = update.effective_chat
 
         tg_chat_id = str(update.effective_chat.id)
@@ -107,7 +107,7 @@ def add_url(bot, update, args):
 
 @user_admin
 def remove_url(bot, update, args):
-    if len(args) >= 1:
+    if args and len(args) >= 1:
         tg_chat_id = str(update.effective_chat.id)
 
         tg_feed_link = args[0]

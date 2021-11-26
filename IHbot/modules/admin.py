@@ -128,7 +128,7 @@ def pin(bot: Bot, update: Update, args: List[str] = None) -> str:
     prev_message = update.effective_message.reply_to_message
 
     is_silent = True
-    if len(args) >= 1:
+    if args and len(args) >= 1:
         is_silent = not (args[0].lower() == 'notify' or args[0].lower() == 'loud' or args[0].lower() == 'violent')
 
     if prev_message and is_group:

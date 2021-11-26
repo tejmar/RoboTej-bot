@@ -104,7 +104,7 @@ def lock(bot: Bot, update: Update, args: List[str] = None) -> str:
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
     if can_delete(chat, bot.id):
-        if len(args) >= 1:
+        if args and len(args) >= 1:
             if args[0] in LOCK_TYPES:
                 sql.update_lock(chat.id, args[0], locked=True)
                 message.reply_text("Locked {} messages for all non-admins!".format(args[0]))
@@ -145,7 +145,7 @@ def unlock(bot: Bot, update: Update, args: List[str] = None) -> str:
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
     if is_user_admin(chat, message.from_user.id):
-        if len(args) >= 1:
+        if args and len(args) >= 1:
             if args[0] in LOCK_TYPES:
                 sql.update_lock(chat.id, args[0], locked=False)
                 message.reply_text("Unlocked {} for everyone!".format(args[0]))

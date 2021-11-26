@@ -68,7 +68,7 @@ if is_module_loaded(FILENAME):
     @user_admin
     def disable(bot: Bot, update: Update, args: List[str] = None):
         chat = update.effective_chat  # type: Optional[Chat]
-        if len(args) >= 1:
+        if args and len(args) >= 1:
             disable_cmd = args[0]
             if disable_cmd.startswith(CMD_STARTERS):
                 disable_cmd = disable_cmd[1:]
@@ -88,7 +88,7 @@ if is_module_loaded(FILENAME):
     @user_admin
     def enable(bot: Bot, update: Update, args: List[str] = None):
         chat = update.effective_chat  # type: Optional[Chat]
-        if len(args) >= 1:
+        if args and len(args) >= 1:
             enable_cmd = args[0]
             if enable_cmd.startswith(CMD_STARTERS):
                 enable_cmd = enable_cmd[1:]

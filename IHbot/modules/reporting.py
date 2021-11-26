@@ -21,7 +21,7 @@ def report_setting(bot: Bot, update: Update, args: List[str] = None):
     msg = update.effective_message  # type: Optional[Message]
 
     if chat.type == chat.PRIVATE:
-        if len(args) >= 1:
+        if args and len(args) >= 1:
             if args[0] in ("yes", "on"):
                 sql.set_user_setting(chat.id, True)
                 msg.reply_text("Turned on reporting! You'll be notified whenever anyone reports something.")
@@ -34,7 +34,7 @@ def report_setting(bot: Bot, update: Update, args: List[str] = None):
                            parse_mode=ParseMode.MARKDOWN)
 
     else:
-        if len(args) >= 1:
+        if args and len(args) >= 1:
             if args[0] in ("yes", "on"):
                 sql.set_chat_setting(chat.id, True)
                 msg.reply_text("Turned on reporting! Admins who have turned on reports will be notified when /report "
