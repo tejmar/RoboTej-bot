@@ -165,7 +165,7 @@ def save(bot: Bot, update: Update):
 @user_admin
 def clear(bot: Bot, update: Update, args: List[str] = None):
     chat_id = update.effective_chat.id
-    if len(args) >= 1:
+    if args and len(args) >= 1:
         notename = args[0]
 
         if sql.rm_note(chat_id, notename):

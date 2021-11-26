@@ -61,7 +61,7 @@ def set_flood(bot: Bot, update: Update, args: List[str] = None) -> str:
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
 
-    if len(args) >= 1:
+    if args and len(args) >= 1:
         val = args[0].lower()
         if val == "off" or val == "no" or val == "0":
             sql.set_flood(chat.id, 0)
