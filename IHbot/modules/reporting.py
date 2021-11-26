@@ -16,7 +16,7 @@ REPORT_GROUP = 5
 
 @run_async
 @user_admin
-def report_setting(bot: Bot, update: Update, args: List[str]):
+def report_setting(bot: Bot, update: Update, args: List[str] = None):
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
 

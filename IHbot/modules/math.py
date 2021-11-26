@@ -12,37 +12,37 @@ def join(args):
     return x
 
 @run_async
-def simplify(bot: Bot, update: Update, args: List[str]):
+def simplify(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     message.reply_text(newton.simplify('{}'.format(join(args))))
 
 @run_async
-def factor(bot: Bot, update: Update, args: List[str]):
+def factor(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     message.reply_text(newton.factor('{}'.format(join(args))))
 
 @run_async
-def derive(bot: Bot, update: Update, args: List[str]):
+def derive(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     message.reply_text(newton.derive('{}'.format(join(args))))
 
 @run_async
-def integrate(bot: Bot, update: Update, args: List[str]):
+def integrate(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     message.reply_text(newton.integrate('{}'.format(join(args))))
 
 @run_async
-def zeroes(bot: Bot, update: Update, args: List[str]):
+def zeroes(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     message.reply_text(newton.zeroes('{}'.format(join(args))))
 
 @run_async
-def tangent(bot: Bot, update: Update, args: List[str]):
+def tangent(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     message.reply_text(newton.tangent('{}'.format(join(args))))
 
 @run_async
-def area(bot: Bot, update: Update, args: List[str]):
+def area(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     message.reply_text(newton.area('{}'.format(join(args))))
 

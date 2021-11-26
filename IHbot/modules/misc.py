@@ -165,7 +165,7 @@ def runs(bot: Bot, update: Update):
     update.effective_message.reply_text(random.choice(RUN_STRINGS))
 
 @run_async
-def slap(bot: Bot, update: Update, args: List[str]):
+def slap(bot: Bot, update: Update, args: List[str] = None):
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
     msg = update.effective_message  # type: Optional[Message]
 
@@ -211,7 +211,7 @@ def get_bot_ip(bot: Bot, update: Update):
     update.message.reply_text(res.text)
 
 @run_async
-def get_id(bot: Bot, update: Update, args: List[str]):
+def get_id(bot: Bot, update: Update, args: List[str] = None):
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
     user_id = extract_user(update.effective_message, args)
     if user_id:
@@ -240,7 +240,7 @@ def get_id(bot: Bot, update: Update, args: List[str]):
                                                 parse_mode=ParseMode.MARKDOWN)
 
 @run_async
-def info(bot: Bot, update: Update, args: List[str]):
+def info(bot: Bot, update: Update, args: List[str] = None):
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
     msg = update.effective_message  # type: Optional[Message]
     user_id = extract_user(update.effective_message, args)
@@ -295,7 +295,7 @@ def info(bot: Bot, update: Update, args: List[str]):
     update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
 
 @run_async
-def get_time(bot: Bot, update: Update, args: List[str]):
+def get_time(bot: Bot, update: Update, args: List[str] = None):
     if len(args) == 0:
         update.effective_message.reply_text("Write a location to check the time.")
         return
@@ -374,7 +374,7 @@ def getlink(bot: Bot, update: Update, args: List[int]):
 @bot_admin
 @can_restrict
 @user_admin
-def safe_mode(bot: Bot, update: Update, args: List[str]):
+def safe_mode(bot: Bot, update: Update, args: List[str] = None):
     chat = update.effective_chat
     message = update.effective_message
     if not args:
@@ -440,7 +440,7 @@ def markdown_help(bot: Bot, update: Update):
 def stats(bot: Bot, update: Update):
     update.effective_message.reply_text("Current stats:\n" + "\n".join([mod.__stats__() for mod in STATS]))
 
-def gps(bot: Bot, update: Update, args: List[str]):
+def gps(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     if len(args) == 0:
         update.effective_message.reply_text("That was a funny joke, but no really, put in a location")

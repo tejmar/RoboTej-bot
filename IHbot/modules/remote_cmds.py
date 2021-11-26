@@ -84,7 +84,7 @@ RUNMUTE_ERRORS = {
 
 @run_async
 @bot_admin
-def rban(bot: Bot, update: Update, args: List[str]):
+def rban(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if not args:
@@ -151,7 +151,7 @@ def rban(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 @bot_admin
-def runban(bot: Bot, update: Update, args: List[str]):
+def runban(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if not args:
@@ -218,7 +218,7 @@ def runban(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 @bot_admin
-def rkick(bot: Bot, update: Update, args: List[str]):
+def rkick(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if not args:
@@ -285,7 +285,7 @@ def rkick(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 @bot_admin
-def rmute(bot: Bot, update: Update, args: List[str]):
+def rmute(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if not args:
@@ -352,7 +352,7 @@ def rmute(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 @bot_admin
-def runmute(bot: Bot, update: Update, args: List[str]):
+def runmute(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if not args:

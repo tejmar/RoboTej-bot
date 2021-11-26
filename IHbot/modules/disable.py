@@ -66,7 +66,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @user_admin
-    def disable(bot: Bot, update: Update, args: List[str]):
+    def disable(bot: Bot, update: Update, args: List[str] = None):
         chat = update.effective_chat  # type: Optional[Chat]
         if len(args) >= 1:
             disable_cmd = args[0]
@@ -86,7 +86,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @user_admin
-    def enable(bot: Bot, update: Update, args: List[str]):
+    def enable(bot: Bot, update: Update, args: List[str] = None):
         chat = update.effective_chat  # type: Optional[Chat]
         if len(args) >= 1:
             enable_cmd = args[0]

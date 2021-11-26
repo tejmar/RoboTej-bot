@@ -15,7 +15,7 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 BASE_URL = 'https://del.dog'
 
 @run_async
-def paste(bot: Bot, update: Update, args: List[str]):
+def paste(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if message.reply_to_message:
@@ -46,7 +46,7 @@ def paste(bot: Bot, update: Update, args: List[str]):
     update.effective_message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
 @run_async
-def get_paste_content(bot: Bot, update: Update, args: List[str]):
+def get_paste_content(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if len(args) >= 1:
@@ -79,7 +79,7 @@ def get_paste_content(bot: Bot, update: Update, args: List[str]):
     update.effective_message.reply_text('```' + escape_markdown(r.text) + '```', parse_mode=ParseMode.MARKDOWN)
 
 @run_async
-def get_paste_stats(bot: Bot, update: Update, args: List[str]):
+def get_paste_stats(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if len(args) >= 1:

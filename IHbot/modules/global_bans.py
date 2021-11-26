@@ -44,7 +44,7 @@ UNGBAN_ERRORS = {
 
 
 @run_async
-def gban(bot: Bot, update: Update, args: List[str]):
+def gban(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message  # type: Optional[Message]
 
     user_id, reason = extract_user_and_text(message, args)
@@ -135,7 +135,7 @@ def gban(bot: Bot, update: Update, args: List[str]):
     message.reply_text("Person has been \"Dealt with\".")
 
 @run_async
-def ungban(bot: Bot, update: Update, args: List[str]):
+def ungban(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message  # type: Optional[Message]
 
     user_id = extract_user(message, args)
@@ -251,7 +251,7 @@ def enforce_gban(bot: Bot, update: Update):
 
 @run_async
 @user_admin
-def gbanstat(bot: Bot, update: Update, args: List[str]):
+def gbanstat(bot: Bot, update: Update, args: List[str] = None):
     if len(args) > 0:
         if args[0].lower() in ["on", "yes"]:
             sql.enable_gbans(update.effective_chat.id)

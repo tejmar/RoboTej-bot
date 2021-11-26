@@ -110,7 +110,7 @@ def get(bot, update, notename, show_none=True, no_format=False):
 
 
 @run_async
-def cmd_get(bot: Bot, update: Update, args: List[str]):
+def cmd_get(bot: Bot, update: Update, args: List[str] = None):
     if len(args) >= 2 and args[1].lower() == "noformat":
         get(bot, update, args[0], show_none=True, no_format=True)
     elif len(args) >= 1:
@@ -163,7 +163,7 @@ def save(bot: Bot, update: Update):
 
 @run_async
 @user_admin
-def clear(bot: Bot, update: Update, args: List[str]):
+def clear(bot: Bot, update: Update, args: List[str] = None):
     chat_id = update.effective_chat.id
     if len(args) >= 1:
         notename = args[0]

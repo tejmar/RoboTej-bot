@@ -28,7 +28,7 @@ GKICK_ERRORS = {
 }
 
 @run_async
-def gkick(bot: Bot, update: Update, args: List[str]):
+def gkick(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     user_id = extract_user(message, args)
     try:

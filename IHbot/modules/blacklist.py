@@ -19,7 +19,7 @@ BASE_BLACKLIST_STRING = "Current <b>blacklisted</b> words:\n"
 
 
 @run_async
-def blacklist(bot: Bot, update: Update, args: List[str]):
+def blacklist(bot: Bot, update: Update, args: List[str] = None):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
 

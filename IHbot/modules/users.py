@@ -70,7 +70,7 @@ def broadcast(bot: Bot, update: Update):
 
 
 @run_async
-def restrict_group(bot: Bot, update: Update, args: List[str]) -> str:
+def restrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
     message = update.effective_message  # type: Optional[Message]
 
     # Check if there is only one argument
@@ -141,7 +141,7 @@ def new_message(bot: Bot, update: Update):  # Leave group when a message is sent
 
 
 @run_async
-def unrestrict_group(bot: Bot, update: Update, args: List[str]) -> str:
+def unrestrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
     message = update.effective_message  # type: Optional[Message]
     
     # Check if there is only one argument
