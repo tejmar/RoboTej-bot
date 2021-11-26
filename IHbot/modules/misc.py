@@ -160,14 +160,16 @@ HIT = (
 GMAPS_LOC = "https://maps.googleapis.com/maps/api/geocode/json"
 GMAPS_TIME = "https://maps.googleapis.com/maps/api/timezone/json"
 
+
 @run_async
 def runs(update: Update, context: CallbackContext):
-    context.bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
+    context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     update.effective_message.reply_text(random.choice(RUN_STRINGS))
+
 
 @run_async
 def slap(update: Update, context: CallbackContext):
-    context.bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
+    context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     msg = update.effective_message  # type: Optional[Message]
 
     # reply to correct message
@@ -203,6 +205,7 @@ def slap(update: Update, context: CallbackContext):
 
     reply_text(repl, parse_mode=ParseMode.MARKDOWN)
 
+
 @run_async
 def get_bot_ip(update: Update, context: CallbackContext):
     """ Sends the bot's IP address, so as to be able to ssh in if necessary.
@@ -211,9 +214,10 @@ def get_bot_ip(update: Update, context: CallbackContext):
     res = requests.get("http://ipinfo.io/ip")
     update.message.reply_text(res.text)
 
+
 @run_async
 def get_id(update: Update, context: CallbackContext):
-    context.bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
+    context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     user_id = extract_user(update.effective_message, args)
     if user_id:
         if update.effective_message.reply_to_message and update.effective_message.reply_to_message.forward_from:
@@ -240,9 +244,10 @@ def get_id(update: Update, context: CallbackContext):
             update.effective_message.reply_text("This group's id is `{}`.".format(chat.id),
                                                 parse_mode=ParseMode.MARKDOWN)
 
+
 @run_async
 def info(update: Update, context: CallbackContext):
-    context.bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
+    context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     msg = update.effective_message  # type: Optional[Message]
     user_id = extract_user(update.effective_message, args)
 
@@ -295,6 +300,7 @@ def info(update: Update, context: CallbackContext):
 
     update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
 
+
 @run_async
 def get_time(update: Update, context: CallbackContext):
     if len(args) == 0:
@@ -312,7 +318,7 @@ def get_time(update: Update, context: CallbackContext):
     if res.status_code == 200:
         loc = json.loads(res.text)
         if loc.get('status') == 'OK':
-            context.bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
+            context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
             lat = loc['results'][0]['geometry']['location']['lat']
             long = loc['results'][0]['geometry']['location']['lng']
 
@@ -341,6 +347,7 @@ def get_time(update: Update, context: CallbackContext):
                 time_there = datetime.fromtimestamp(timenow + timestamp + offset).strftime("%H:%M:%S on %A %d %B")
                 update.message.reply_text("It's {} in {}".format(time_there, location))
 
+
 @run_async
 def echo(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
@@ -351,12 +358,14 @@ def echo(update: Update, context: CallbackContext):
         message.reply_text(args[1], quote=False)
     message.delete()
 
+
 def ping(update: Update, context: CallbackContext):
     start_time = time.time()
     requests.get('https://api.telegram.org')
     end_time = time.time()
-    ping_time = float(end_time - start_time)*1000
+    ping_time = float(end_time - start_time) * 1000
     update.effective_message.reply_text(" Ping speed was : {}ms".format(ping_time))
+
 
 def getlink(update: Update, context: CallbackContext):
     if args:
@@ -368,9 +377,11 @@ def getlink(update: Update, context: CallbackContext):
     if bot_member.can_invite_users:
         titlechat = context.bot.get_chat(chat_id).title
         invitelink = context.bot.get_chat(chat_id).invite_link
-        update.effective_message.reply_text("Successfully retrieved the invite link in group {}. \nInvite link : {}".format(titlechat, invitelink))
+        update.effective_message.reply_text(
+            "Successfully retrieved the invite link in group {}. \nInvite link : {}".format(titlechat, invitelink))
     else:
         update.effective_message.reply_text("I don't have access to the invite link!")
+
 
 @bot_admin
 @can_restrict
@@ -379,20 +390,25 @@ def safe_mode(update: Update, context: CallbackContext):
     chat = update.effective_chat
     message = update.effective_message
     if not args:
-        message.reply_text("This chat has its Safe Mode set to *{}*".format(is_safemoded(chat.id).safemode_status), parse_mode=ParseMode.MARKDOWN)
+        message.reply_text("This chat has its Safe Mode set to *{}*".format(is_safemoded(chat.id).safemode_status),
+                           parse_mode=ParseMode.MARKDOWN)
         return
 
     if str(args[0]).lower() in ["on", "yes"]:
         set_safemode(chat.id, True)
-        message.reply_text("Safe Mode has been set to *{}*".format(is_safemoded(chat.id).safemode_status), parse_mode=ParseMode.MARKDOWN)
+        message.reply_text("Safe Mode has been set to *{}*".format(is_safemoded(chat.id).safemode_status),
+                           parse_mode=ParseMode.MARKDOWN)
         return
 
     elif str(args[0]).lower() in ["off", "no"]:
         set_safemode(chat.id, False)
-        message.reply_text("Safe Mode has been set to *{}*".format(is_safemoded(chat.id).safemode_status), parse_mode=ParseMode.MARKDOWN)
+        message.reply_text("Safe Mode has been set to *{}*".format(is_safemoded(chat.id).safemode_status),
+                           parse_mode=ParseMode.MARKDOWN)
         return
     else:
-        message.reply_text("I only recognize the arguments `{}`, `{}`, `{}` or `{}`".format("Yes", "No", "On", "Off"), parse_mode=ParseMode.MARKDOWN)
+        message.reply_text("I only recognize the arguments `{}`, `{}`, `{}` or `{}`".format("Yes", "No", "On", "Off"),
+                           parse_mode=ParseMode.MARKDOWN)
+
 
 @run_async
 def gdpr(update: Update, context: CallbackContext):
@@ -408,6 +424,7 @@ def gdpr(update: Update, context: CallbackContext):
                                         "\"for the performance of a task carried out in the public interest\", as is "
                                         "the case for the aforementioned pieces of data.",
                                         parse_mode=ParseMode.MARKDOWN)
+
 
 MARKDOWN_HELP = """
 Markdown is a very powerful formatting tool supported by telegram. {} has some enhancements, to make sure that \
@@ -429,6 +446,7 @@ This will create two buttons on a single line, instead of one button per line.
 Keep in mind that your message <b>MUST</b> contain some text other than just a button!
 """.format(dispatcher.bot.first_name)
 
+
 @run_async
 def markdown_help(update: Update, context: CallbackContext):
     update.effective_message.reply_text(MARKDOWN_HELP, parse_mode=ParseMode.HTML)
@@ -437,9 +455,11 @@ def markdown_help(update: Update, context: CallbackContext):
                                         "[URL](example.com) [button](buttonurl:github.com) "
                                         "[button2](buttonurl://google.com:same)")
 
+
 @run_async
 def stats(update: Update, context: CallbackContext):
     update.effective_message.reply_text("Current stats:\n" + "\n".join([mod.__stats__() for mod in STATS]))
+
 
 def gps(update: Update, context: CallbackContext):
     message = update.effective_message
@@ -448,16 +468,18 @@ def gps(update: Update, context: CallbackContext):
     try:
         geolocator = Nominatim(user_agent="SkittBot")
         location = " ".join(args)
-        geoloc = geolocator.geocode(location)  
+        geoloc = geolocator.geocode(location)
         chat_id = update.effective_chat.id
         lon = geoloc.longitude
         lat = geoloc.latitude
-        the_loc = Location(lon, lat) 
-        gm = "https://www.google.com/maps/search/{},{}".format(lat,lon)
+        the_loc = Location(lon, lat)
+        gm = "https://www.google.com/maps/search/{},{}".format(lat, lon)
         context.bot.send_location(chat_id, location=the_loc)
-        update.message.reply_text("Open with: [Google Maps]({})".format(gm), parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        update.message.reply_text("Open with: [Google Maps]({})".format(gm), parse_mode=ParseMode.MARKDOWN,
+                                  disable_web_page_preview=True)
     except AttributeError:
         update.message.reply_text("I can't find that")
+
 
 @run_async
 def shrug(update: Update, context: CallbackContext):
@@ -467,6 +489,7 @@ def shrug(update: Update, context: CallbackContext):
         message.reply_to_message.reply_text(default_msg)
     else:
         message.reply_text(default_msg)
+
 
 # /ip is for private use
 __help__ = """

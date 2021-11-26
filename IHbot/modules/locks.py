@@ -22,7 +22,8 @@ from IHbot.modules.sql import users_sql
 LOCK_TYPES = {'stickers': Filters.sticker,
               'audio': Filters.audio,
               'voice': Filters.voice,
-              'documents': Filters.document & CustomFilters.mime_type("application/vnd.android.package-archive") & ~Filters.animation,
+              'documents': Filters.document & CustomFilters.mime_type(
+                  "application/vnd.android.package-archive") & ~Filters.animation,
               'videos': Filters.video,
               'videonotes': Filters.video_note,
               'contacts': Filters.contact,
@@ -37,7 +38,8 @@ LOCK_TYPES = {'stickers': Filters.sticker,
 
 GIF = Filters.animation
 OTHER = Filters.game | Filters.sticker | GIF
-MEDIA = Filters.audio | Filters.document & CustomFilters.mime_type("application/vnd.android.package-archive") | Filters.video | Filters.video_note | Filters.voice | Filters.photo
+MEDIA = Filters.audio | Filters.document & CustomFilters.mime_type(
+    "application/vnd.android.package-archive") | Filters.video | Filters.video_note | Filters.voice | Filters.photo
 MESSAGES = Filters.text | Filters.contact | Filters.location | Filters.venue | Filters.command | MEDIA | OTHER
 PREVIEWS = Filters.entity("url")
 
@@ -262,7 +264,8 @@ def build_lock_message(chat_id):
                    "\n - forward = `{}`" \
                    "\n - game = `{}`" \
                    "\n - location = `{}`".format(locks.sticker, locks.audio, locks.voice, locks.document,
-                                                 locks.video, locks.videonote, locks.contact, locks.photo, locks.gif, locks.url,
+                                                 locks.video, locks.videonote, locks.contact, locks.photo, locks.gif,
+                                                 locks.url,
                                                  locks.bots, locks.forward, locks.game, locks.location)
         if restr:
             res += "\n - messages = `{}`" \

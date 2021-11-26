@@ -66,6 +66,7 @@ def rm_afk(user_id):
         SESSION.close()
         return False
 
+
 def __load_afk_users():
     global AFK_USERS
     try:

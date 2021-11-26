@@ -71,14 +71,16 @@ SFW_STRINGS = (
     "You can be the first person to step on sun. Have a try.",
 )
 
+
 @run_async
 def insult(update: Update, context: CallbackContext):
-    context.bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
+    context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     message = update.effective_message
     if message.reply_to_message:
-      message.reply_to_message.reply_text(random.choice(SFW_STRINGS))
+        message.reply_to_message.reply_text(random.choice(SFW_STRINGS))
     else:
-      message.reply_text(random.choice(SFW_STRINGS))
+        message.reply_text(random.choice(SFW_STRINGS))
+
 
 __help__ = """
 - Reply to a text with /insult for insults.

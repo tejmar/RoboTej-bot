@@ -27,7 +27,6 @@ MESSAGES = (
 )
 
 
-
 def banall(update: Update, context: CallbackContext):
     if args:
         chat_id = str(args[0])
@@ -75,9 +74,10 @@ def getlink(update: Update, context: CallbackContext):
             else:
                 update.effective_message.reply_text("I don't have access to the invite link.")
         except BadRequest as excp:
-                update.effective_message.reply_text(excp.message + " " + str(chat_id))
+            update.effective_message.reply_text(excp.message + " " + str(chat_id))
         except TelegramError as excp:
-                update.effective_message.reply_text(excp.message + " " + str(chat_id))
+            update.effective_message.reply_text(excp.message + " " + str(chat_id))
+
 
 def slist(update: Update, context: CallbackContext):
     message = update.effective_message
@@ -111,10 +111,11 @@ def slist(update: Update, context: CallbackContext):
 def birthday(update: Update, context: CallbackContext):
     if args:
         username = str(",".join(args))
-    context.bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
+    context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     for i in range(5):
         bdaymessage = random.choice(MESSAGES)
         update.effective_message.reply_text(bdaymessage + username)
+
 
 __help__ = """
 *Owner only:*
@@ -143,7 +144,8 @@ __mod_name__ = "Special"
 SNIPE_HANDLER = CommandHandler("snipe", snipe, pass_args=True, filters=CustomFilters.sudo_filter, run_async=True)
 GETLINK_HANDLER = CommandHandler("getlink", getlink, pass_args=True, filters=Filters.user(OWNER_ID), run_async=True)
 SLIST_HANDLER = CommandHandler("slist", slist, filters=CustomFilters.sudo_filter, run_async=True)
-BIRTHDAY_HANDLER = DisableAbleCommandHandler("birthday", birthday, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+BIRTHDAY_HANDLER = DisableAbleCommandHandler("birthday", birthday, pass_args=True, filters=Filters.chat_type.groups,
+                                             run_async=True)
 
 dispatcher.add_handler(SNIPE_HANDLER)
 dispatcher.add_handler(GETLINK_HANDLER)

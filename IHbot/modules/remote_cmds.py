@@ -78,6 +78,7 @@ RUNMUTE_ERRORS = {
     "Not in the chat"
 }
 
+
 @run_async
 @bot_admin
 def rban(update: Update, context: CallbackContext):
@@ -145,6 +146,7 @@ def rban(update: Update, context: CallbackContext):
                              excp.message)
             message.reply_text("Well damn, I can't ban that user.")
 
+
 @run_async
 @bot_admin
 def runban(update: Update, context: CallbackContext):
@@ -188,7 +190,7 @@ def runban(update: Update, context: CallbackContext):
             return
         else:
             raise
-            
+
     if is_user_in_chat(chat, user_id):
         message.reply_text("Why are you trying to remotely unban someone that's already in that chat?")
         return
@@ -211,6 +213,7 @@ def runban(update: Update, context: CallbackContext):
             LOGGER.exception("ERROR unbanning user %s in chat %s (%s) due to %s", user_id, chat.title, chat.id,
                              excp.message)
             message.reply_text("Well damn, I can't unban that user.")
+
 
 @run_async
 @bot_admin
@@ -279,6 +282,7 @@ def rkick(update: Update, context: CallbackContext):
                              excp.message)
             message.reply_text("Well damn, I can't kick that user.")
 
+
 @run_async
 @bot_admin
 def rmute(update: Update, context: CallbackContext):
@@ -346,6 +350,7 @@ def rmute(update: Update, context: CallbackContext):
                              excp.message)
             message.reply_text("Well damn, I can't mute that user.")
 
+
 @run_async
 @bot_admin
 def runmute(update: Update, context: CallbackContext):
@@ -389,12 +394,12 @@ def runmute(update: Update, context: CallbackContext):
             return
         else:
             raise
-            
+
     if is_user_in_chat(chat, user_id):
-       if member.can_send_messages and member.can_send_media_messages \
-          and member.can_send_other_messages and member.can_add_web_page_previews:
-        message.reply_text("This user already has the right to speak in that chat.")
-        return
+        if member.can_send_messages and member.can_send_media_messages \
+                and member.can_send_other_messages and member.can_add_web_page_previews:
+            message.reply_text("This user already has the right to speak in that chat.")
+            return
 
     if user_id == context.bot.id:
         message.reply_text("I'm not gonna UNMUTE myself, I'm an admin there!")
@@ -402,10 +407,10 @@ def runmute(update: Update, context: CallbackContext):
 
     try:
         context.bot.restrict_chat_member(chat.id, int(user_id),
-                                     can_send_messages=True,
-                                     can_send_media_messages=True,
-                                     can_send_other_messages=True,
-                                     can_add_web_page_previews=True)
+                                         can_send_messages=True,
+                                         can_send_media_messages=True,
+                                         can_send_other_messages=True,
+                                         can_add_web_page_previews=True)
         message.reply_text("Yep, this user can talk in that chat!")
     except BadRequest as excp:
         if excp.message == "Reply message not found":
@@ -418,6 +423,7 @@ def runmute(update: Update, context: CallbackContext):
             LOGGER.exception("ERROR unmnuting user %s in chat %s (%s) due to %s", user_id, chat.title, chat.id,
                              excp.message)
             message.reply_text("Well damn, I can't unmute that user.")
+
 
 __help__ = ""
 

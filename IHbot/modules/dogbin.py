@@ -9,7 +9,7 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 
 BASE_URL = 'https://del.dog'
 
-@run_async
+
 def paste(update: Update, context: CallbackContext):
     message = update.effective_message
 
@@ -40,7 +40,7 @@ def paste(update: Update, context: CallbackContext):
         reply = f'{BASE_URL}/{key}'
     update.effective_message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
-@run_async
+
 def get_paste_content(update: Update, context: CallbackContext):
     message = update.effective_message
 
@@ -73,7 +73,7 @@ def get_paste_content(update: Update, context: CallbackContext):
 
     update.effective_message.reply_text('```' + escape_markdown(r.text) + '```', parse_mode=ParseMode.MARKDOWN)
 
-@run_async
+
 def get_paste_stats(update: Update, context: CallbackContext):
     message = update.effective_message
 
@@ -119,9 +119,9 @@ __help__ = """
 
 __mod_name__ = "dogbin"
 
-PASTE_HANDLER = DisableAbleCommandHandler("paste", paste, pass_args=True)
-GET_PASTE_HANDLER = DisableAbleCommandHandler("getpaste", get_paste_content, pass_args=True)
-PASTE_STATS_HANDLER = DisableAbleCommandHandler("pastestats", get_paste_stats, pass_args=True)
+PASTE_HANDLER = DisableAbleCommandHandler("paste", paste, pass_args=True, run_async=True)
+GET_PASTE_HANDLER = DisableAbleCommandHandler("getpaste", get_paste_content, pass_args=True, run_async=True)
+PASTE_STATS_HANDLER = DisableAbleCommandHandler("pastestats", get_paste_stats, pass_args=True, run_async=True)
 
 dispatcher.add_handler(PASTE_HANDLER)
 dispatcher.add_handler(GET_PASTE_HANDLER)

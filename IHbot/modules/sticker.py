@@ -17,13 +17,14 @@ def stickerid(update: Update):
     if msg.reply_to_message and msg.reply_to_message.sticker:
         update.effective_message.reply_text("Hello " +
                                             "[{}](tg://user?id={})".format(msg.from_user.first_name, msg.from_user.id)
-                                            + ", The sticker id you are replying is :\n```" + 
+                                            + ", The sticker id you are replying is :\n```" +
                                             escape_markdown(msg.reply_to_message.sticker.file_id) + "```",
                                             parse_mode=ParseMode.MARKDOWN)
     else:
         update.effective_message.reply_text("Hello " + "[{}](tg://user?id={})".format(msg.from_user.first_name,
-                                            msg.from_user.id) + ", Please reply to sticker message to get id sticker",
+                                                                                      msg.from_user.id) + ", Please reply to sticker message to get id sticker",
                                             parse_mode=ParseMode.MARKDOWN)
+
 
 @run_async
 def getsticker(update: Update, context: CallbackContext):
@@ -32,8 +33,8 @@ def getsticker(update: Update, context: CallbackContext):
     if msg.reply_to_message and msg.reply_to_message.sticker:
         context.bot.sendChatAction(chat_id, "typing")
         update.effective_message.reply_text("Hello " + "[{}](tg://user?id={})".format(msg.from_user.first_name,
-                                            msg.from_user.id) + ", Please check the file you requested below."
-                                            "\nPlease use this feature wisely!",
+                                                                                      msg.from_user.id) + ", Please check the file you requested below."
+                                                                                                          "\nPlease use this feature wisely!",
                                             parse_mode=ParseMode.MARKDOWN)
         context.bot.sendChatAction(chat_id, "upload_document")
         file_id = msg.reply_to_message.sticker.file_id
@@ -44,8 +45,9 @@ def getsticker(update: Update, context: CallbackContext):
     else:
         context.bot.sendChatAction(chat_id, "typing")
         update.effective_message.reply_text("Hello " + "[{}](tg://user?id={})".format(msg.from_user.first_name,
-                                            msg.from_user.id) + ", Please reply to sticker message to get sticker image",
+                                                                                      msg.from_user.id) + ", Please reply to sticker message to get sticker image",
                                             parse_mode=ParseMode.MARKDOWN)
+
 
 @run_async
 def kang(update: Update, context: CallbackContext):
@@ -56,16 +58,16 @@ def kang(update: Update, context: CallbackContext):
         kang_file = context.bot.get_file(file_id)
         kang_file.download('kangsticker.png')
         hash = hashlib.sha1(bytearray(user.id)).hexdigest()
-        packname = "a" + hash[:20] + "_by_"+context.bot.username
+        packname = "a" + hash[:20] + "_by_" + context.bot.username
         if msg.reply_to_message.sticker.emoji:
             sticker_emoji = msg.reply_to_message.sticker.emoji
         else:
             sticker_emoji = "🤔"
         try:
             context.bot.add_sticker_to_set(user_id=user.id, name=packname,
-                                   png_sticker=open('kangsticker.png', 'rb'), emojis=sticker_emoji)
+                                           png_sticker=open('kangsticker.png', 'rb'), emojis=sticker_emoji)
             msg.reply_text("Sticker successfully added to [pack](t.me/addstickers/%s)" % packname,
-                            parse_mode=ParseMode.MARKDOWN)
+                           parse_mode=ParseMode.MARKDOWN)
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
                 makepack_internal(msg, user, open('kangsticker.png', 'rb'), sticker_emoji, context.bot)
@@ -73,6 +75,7 @@ def kang(update: Update, context: CallbackContext):
         os.remove("kangsticker.png")
     else:
         msg.reply_text("Please reply to a sticker for me to kang it.")
+
 
 def makepack_internal(msg, user, png_sticker, emoji, bot):
     name = user.first_name
@@ -98,6 +101,7 @@ def makepack_internal(msg, user, png_sticker, emoji, bot):
                        parse_mode=ParseMode.MARKDOWN)
     else:
         msg.reply_text("Failed to create sticker pack. Possibly due to blek mejik.")
+
 
 __help__ = """
 - /stickerid: reply to a sticker to me to tell you its file ID.

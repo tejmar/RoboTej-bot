@@ -48,8 +48,9 @@ def mute(update: Update, context: CallbackContext) -> str:
                    "\n<b>• Admin:</b> {}" \
                    "\n<b>• User:</b> {}" \
                    "\n<b>• ID:</b> <code>{}</code>".format(html.escape(chat.title),
-                                              mention_html(user.id, user.first_name),
-                                              mention_html(member.user.id, member.user.first_name), user_id)
+                                                           mention_html(user.id, user.first_name),
+                                                           mention_html(member.user.id, member.user.first_name),
+                                                           user_id)
 
         else:
             message.reply_text("This user is already muted!")
@@ -80,10 +81,10 @@ def unmute(update: Update, context: CallbackContext) -> str:
             message.reply_text("This user already has the right to speak.")
         else:
             context.bot.restrict_chat_member(chat.id, int(user_id),
-                                     can_send_messages=True,
-                                     can_send_media_messages=True,
-                                     can_send_other_messages=True,
-                                     can_add_web_page_previews=True)
+                                             can_send_messages=True,
+                                             can_send_media_messages=True,
+                                             can_send_other_messages=True,
+                                             can_add_web_page_previews=True)
             keyboard = []
             reply = "Yep, {} can start talking again!".format(mention_html(member.user.id, member.user.first_name))
             message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
@@ -93,7 +94,8 @@ def unmute(update: Update, context: CallbackContext) -> str:
                    "\n<b>• User:</b> {}" \
                    "\n<b>• ID:</b> <code>{}</code>".format(html.escape(chat.title),
                                                            mention_html(user.id, user.first_name),
-                                                           mention_html(member.user.id, member.user.first_name), user_id)
+                                                           mention_html(member.user.id, member.user.first_name),
+                                                           user_id)
     else:
         message.reply_text("This user isn't even in the chat, unmuting them won't make them talk more than they "
                            "already do!")
@@ -181,6 +183,7 @@ def temp_mute(update: Update, context: CallbackContext) -> str:
 
     return ""
 
+
 @bot_admin
 @user_admin
 @loggable
@@ -191,7 +194,8 @@ def nomedia(update: Update, context: CallbackContext) -> str:
 
     user_id = extract_user(message, args)
     if not user_id:
-        message.reply_text("You'll need to either give me a username to restrict, or reply to someone to be restricted.")
+        message.reply_text(
+            "You'll need to either give me a username to restrict, or reply to someone to be restricted.")
         return ""
 
     if user_id == context.bot.id:
@@ -206,9 +210,9 @@ def nomedia(update: Update, context: CallbackContext) -> str:
 
         elif member.can_send_messages is None or member.can_send_messages:
             context.bot.restrict_chat_member(chat.id, user_id, can_send_messages=True,
-                                     can_send_media_messages=False,
-                                     can_send_other_messages=False,
-                                     can_add_web_page_previews=False)
+                                             can_send_media_messages=False,
+                                             can_send_other_messages=False,
+                                             can_add_web_page_previews=False)
             keyboard = []
             reply = "{} is restricted from sending media!".format(mention_html(member.user.id, member.user.first_name))
             message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
@@ -217,8 +221,9 @@ def nomedia(update: Update, context: CallbackContext) -> str:
                    "\n<b>• Admin:</b> {}" \
                    "\n<b>• User:</b> {}" \
                    "\n<b>• ID:</b> <code>{}</code>".format(html.escape(chat.title),
-                                              mention_html(user.id, user.first_name),
-                                              mention_html(member.user.id, member.user.first_name), user_id)
+                                                           mention_html(user.id, user.first_name),
+                                                           mention_html(member.user.id, member.user.first_name),
+                                                           user_id)
 
         else:
             message.reply_text("This user is already restricted!")
@@ -226,6 +231,7 @@ def nomedia(update: Update, context: CallbackContext) -> str:
         message.reply_text("This user isn't in the chat!")
 
     return ""
+
 
 @bot_admin
 @user_admin
@@ -237,7 +243,8 @@ def media(update: Update, context: CallbackContext) -> str:
 
     user_id = extract_user(message, args)
     if not user_id:
-        message.reply_text("You'll need to either give me a username to unrestrict, or reply to someone to be unrestricted.")
+        message.reply_text(
+            "You'll need to either give me a username to unrestrict, or reply to someone to be unrestricted.")
         return ""
 
     member = chat.get_member(int(user_id))
@@ -248,10 +255,10 @@ def media(update: Update, context: CallbackContext) -> str:
             message.reply_text("This user already has the rights to send anything.")
         else:
             context.bot.restrict_chat_member(chat.id, int(user_id),
-                                     can_send_messages=True,
-                                     can_send_media_messages=True,
-                                     can_send_other_messages=True,
-                                     can_add_web_page_previews=True)
+                                             can_send_messages=True,
+                                             can_send_media_messages=True,
+                                             can_send_other_messages=True,
+                                             can_add_web_page_previews=True)
             keyboard = []
             reply = "Yep, {} can send media again!".format(mention_html(member.user.id, member.user.first_name))
             message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
@@ -261,12 +268,15 @@ def media(update: Update, context: CallbackContext) -> str:
                    "\n<b>• User:</b> {}" \
                    "\n<b>• ID:</b> <code>{}</code>".format(html.escape(chat.title),
                                                            mention_html(user.id, user.first_name),
-                                                           mention_html(member.user.id, member.user.first_name), user_id)
+                                                           mention_html(member.user.id, member.user.first_name),
+                                                           user_id)
     else:
-        message.reply_text("This user isn't even in the chat, unrestricting them won't make them send anything than they "
-                           "already do!")
+        message.reply_text(
+            "This user isn't even in the chat, unrestricting them won't make them send anything than they "
+            "already do!")
 
     return ""
+
 
 @bot_admin
 @can_restrict
@@ -330,9 +340,9 @@ def temp_nomedia(update: Update, context: CallbackContext) -> str:
     try:
         if member.can_send_messages is None or member.can_send_messages:
             context.bot.restrict_chat_member(chat.id, user_id, until_date=mutetime, can_send_messages=True,
-                                     can_send_media_messages=False,
-                                     can_send_other_messages=False,
-                                     can_add_web_page_previews=False)
+                                             can_send_media_messages=False,
+                                             can_send_other_messages=False,
+                                             can_add_web_page_previews=False)
             message.reply_text("Restricted from sending media for {}!".format(time_val))
             return log
         else:
@@ -351,6 +361,7 @@ def temp_nomedia(update: Update, context: CallbackContext) -> str:
 
     return ""
 
+
 __help__ = """
 *Admin only:*
  - /mute <userhandle>: silences a user. Can also be used as a reply, muting the replied to user.
@@ -361,14 +372,16 @@ __help__ = """
  - /unrestrict <userhandle>: unrestricts a user from sending stickers, gif, embed links or media. Can also be used as a reply, restrict the replied to user.
 """
 
-
 __mod_name__ = "Muting & Restricting"
 
 MUTE_HANDLER = CommandHandler("mute", mute, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
 UNMUTE_HANDLER = CommandHandler("unmute", unmute, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-TEMPMUTE_HANDLER = CommandHandler(["tmute", "tempmute"], temp_mute, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-TEMP_NOMEDIA_HANDLER = CommandHandler(["trestrict", "temprestrict"], temp_nomedia, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-NOMEDIA_HANDLER = CommandHandler(["restrict", "nomedia"], nomedia, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+TEMPMUTE_HANDLER = CommandHandler(["tmute", "tempmute"], temp_mute, pass_args=True, filters=Filters.chat_type.groups,
+                                  run_async=True)
+TEMP_NOMEDIA_HANDLER = CommandHandler(["trestrict", "temprestrict"], temp_nomedia, pass_args=True,
+                                      filters=Filters.chat_type.groups, run_async=True)
+NOMEDIA_HANDLER = CommandHandler(["restrict", "nomedia"], nomedia, pass_args=True, filters=Filters.chat_type.groups,
+                                 run_async=True)
 MEDIA_HANDLER = CommandHandler("unrestrict", media, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
 
 dispatcher.add_handler(MUTE_HANDLER)

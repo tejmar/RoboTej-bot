@@ -132,8 +132,9 @@ def words_are_greeting(msg):
 
 def converse(update: Update, context: CallbackContext):
     message = update.effective_message
-    if (message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == context.bot.id) \
-        or update.effective_chat.id == update.effective_user.id \
+    if (
+            message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == context.bot.id) \
+            or update.effective_chat.id == update.effective_user.id \
             or words_are_greeting(message.text):
         context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
         try:
@@ -148,7 +149,6 @@ __help__ = """
 """.format(telegram.MAX_MESSAGE_LENGTH)
 
 __mod_name__ = "Converse"
-
 
 CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse, run_async=True)
 

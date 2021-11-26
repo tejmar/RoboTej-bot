@@ -145,7 +145,8 @@ def temp_ban(update: Update, context: CallbackContext) -> str:
         chat.kick_member(user_id, until_date=bantime)
         keyboard = []
         context.bot.send_sticker(update.effective_chat.id, BAN_STICKER)
-        reply = "{} has been temporarily banned for {}!".format(mention_html(member.user.id, member.user.first_name),time_val)
+        reply = "{} has been temporarily banned for {}!".format(mention_html(member.user.id, member.user.first_name),
+                                                                time_val)
         message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
         return log
 
@@ -227,16 +228,17 @@ def kickme(update: Update, context: CallbackContext):
     user_id = update.effective_message.from_user.id
     if user_id == OWNER_ID:
         update.effective_message.reply_text("Oof, I can't kick my master.")
-        return 
+        return
     elif is_user_admin(update.effective_chat, user_id):
-          update.effective_message.reply_text("I wish I could... but you're an admin.")
-          return
+        update.effective_message.reply_text("I wish I could... but you're an admin.")
+        return
 
     res = update.effective_chat.unban_member(user_id)  # unban on current user = kick
     if res:
         update.effective_message.reply_text("No problem.")
     else:
         update.effective_message.reply_text("Huh? I can't :/")
+
 
 @run_async
 @bot_admin
@@ -265,6 +267,7 @@ def banme(update: Update, context: CallbackContext):
 
     else:
         update.effective_message.reply_text("Huh? I can't :/")
+
 
 @run_async
 @bot_admin
@@ -313,6 +316,7 @@ def unban(update: Update, context: CallbackContext) -> str:
 
     return log
 
+
 @run_async
 @bot_admin
 @can_restrict
@@ -322,7 +326,7 @@ def sban(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
-    
+
     update.effective_message.delete()
 
     user_id, reason = extract_user_and_text(message, args)
@@ -348,7 +352,7 @@ def sban(update: Update, context: CallbackContext) -> str:
           "\n# SILENTBAN" \
           "\n<b>• Admin:</b> {}" \
           "\n<b>• User:</b> {}" \
-          "\n<b>• ID:</b> <code>{}</code>".format(html.escape(chat.title), mention_html(user.id, user.first_name), 
+          "\n<b>• ID:</b> <code>{}</code>".format(html.escape(chat.title), mention_html(user.id, user.first_name),
                                                   mention_html(member.user.id, member.user.first_name), user_id)
     if reason:
         log += "\n<b>• Reason:</b> {}".format(reason)
@@ -362,8 +366,10 @@ def sban(update: Update, context: CallbackContext) -> str:
             return log
         else:
             LOGGER.warning(update)
-            LOGGER.exception("ERROR banning user %s in chat %s (%s) due to %s", user_id, chat.title, chat.id, excp.message)       
+            LOGGER.exception("ERROR banning user %s in chat %s (%s) due to %s", user_id, chat.title, chat.id,
+                             excp.message)
     return ""
+
 
 __help__ = """
  - /kickme: kicks the user who issued the command

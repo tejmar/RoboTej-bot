@@ -102,48 +102,48 @@ def restrict_group(update: Update, context: CallbackContext) -> str:
         for user in SUDO_USERS:
             name = mention_html(user, context.bot.get_chat(user).first_name)
             sudo_users_list += "\n - {}".format(name)
-        
+
         try:
             context.bot.send_message(chat_id=chat_id,
-                             text="I have been restricted by my admins from this chat. "
-                                  "Request any of my admins to add me to this chat.\n\n"
-                                  "{}".format(sudo_users_list), parse_mode=ParseMode.HTML)
+                                     text="I have been restricted by my admins from this chat. "
+                                          "Request any of my admins to add me to this chat.\n\n"
+                                          "{}".format(sudo_users_list), parse_mode=ParseMode.HTML)
         except Unauthorized as excp:
             if excp.message == "Forbidden: bot is not a member of the supergroup chat":
                 message.reply_text("Looks like I'm no longer a part of that chat!")
                 return
             else:
                 LOGGER.exception("Error while sending message to chat.")
-        
+
         context.bot.leave_chat(chat_id)
 
         sql.set_restriction(chat_id, chat_title, restricted=True)
-        
+
         message.reply_text("Successfully left chat <b>{}</b>!".format(chat_title), parse_mode=ParseMode.HTML)
-            
+
         # Report to sudo users
         restrictor = update.effective_user  # type: Optional[User]
         send_to_list(context.bot, SUDO_USERS, "{} has restricted me from being added to the chat <b>{}</b>."
                      .format(mention_html(restrictor.id, restrictor.first_name), chat_title), html=True)
-                    
+
     else:
         message.reply_text("I'm already restricted from that chat!")
-                
+
 
 @run_async
 def new_message(update: Update, context: CallbackContext):  # Leave group when a message is sent in restricted group
     chat = update.effective_chat  # type: Optional[Chat]
 
     context.bot.send_message(chat_id=chat.id,
-                     text="I have been restricted by my admins from this chat! "
-                          "Request any of my admins to add me to this chat.")
+                             text="I have been restricted by my admins from this chat! "
+                                  "Request any of my admins to add me to this chat.")
     context.bot.leave_chat(chat.id)
 
 
 @run_async
 def unrestrict_group(update: Update, context: CallbackContext) -> str:
     message = update.effective_message  # type: Optional[Message]
-    
+
     # Check if there is only one argument
     if not len(context.args) == 1:
         message.reply_text("Incorrect number of arguments. Please use `/unrestrict chat_id`.",
@@ -164,20 +164,20 @@ def unrestrict_group(update: Update, context: CallbackContext) -> str:
         message.reply_text("I can't seem to find the chat in my database. "
                            "Use /chatlist to obtain a list of chats in my database.")
         return
-    
-    chat_restricted = sql.get_restriction(chat_id)            
+
+    chat_restricted = sql.get_restriction(chat_id)
     if chat_restricted:
         chat_title = html.escape(chat_title)
         sql.set_restriction(chat_id, chat_title, restricted=False)
-        
+
         message.reply_text("Successfully removed all restrictions on the chat <b>{}</b>!"
                            .format(chat_title), parse_mode=ParseMode.HTML)
-                
+
         # Report to sudo users
         unrestrictor = update.effective_user  # type: Optional[User]
         send_to_list(context.bot, SUDO_USERS, "{} has removed my restrictions on the chat <b>{}</b>."
                      .format(mention_html(unrestrictor.id, unrestrictor.first_name), chat_title), html=True)
-            
+
     else:
         message.reply_text("I'm not restricted from that chat!")
 
@@ -250,9 +250,9 @@ __mod_name__ = "Users"
 BROADCAST_HANDLER = CommandHandler("broadcast", broadcast, filters=Filters.user(OWNER_ID))
 USER_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, log_user)
 CHATLIST_HANDLER = CommandHandler("chatlist", chats, filters=CustomFilters.sudo_filter)
-RESTRICT_GROUP_HANDLER = CommandHandler("restrict", restrict_group, pass_args=True, 
+RESTRICT_GROUP_HANDLER = CommandHandler("restrict", restrict_group, pass_args=True,
                                         filters=CustomFilters.sudo_filter)
-UNRESTRICT_GROUP_HANDLER = CommandHandler("unrestrict", unrestrict_group, pass_args=True, 
+UNRESTRICT_GROUP_HANDLER = CommandHandler("unrestrict", unrestrict_group, pass_args=True,
                                           filters=CustomFilters.sudo_filter)
 NEW_MESSAGE_HANDLER = MessageHandler(CustomFilters.chat_restricted, new_message)
 

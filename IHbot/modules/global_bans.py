@@ -103,9 +103,9 @@ def gban(update: Update, context: CallbackContext):
                  "\n<b>User:</b> {}" \
                  "\n<b>ID:</b> <code>{}</code>" \
                  "\n<b>Reason:</b> {}".format(mention_html(banner.id, banner.first_name),
-                                              mention_html(user_chat.id, user_chat.first_name), 
-                                                           user_chat.id, reason or "No reason given"), 
-                html=True)
+                                              mention_html(user_chat.id, user_chat.first_name),
+                                              user_chat.id, reason or "No reason given"),
+                 html=True)
 
     sql.gban_user(user_id, user_chat.username or user_chat.first_name, reason)
 
@@ -131,9 +131,10 @@ def gban(update: Update, context: CallbackContext):
             pass
 
     send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
-                   "{} has been successfully gbanned!".format(mention_html(user_chat.id, user_chat.first_name)),
-                   html=True)
+                 "{} has been successfully gbanned!".format(mention_html(user_chat.id, user_chat.first_name)),
+                 html=True)
     message.reply_text("Person has been \"Dealt with\".")
+
 
 @run_async
 def ungban(update: Update, context: CallbackContext):
@@ -164,9 +165,9 @@ def ungban(update: Update, context: CallbackContext):
                  "\n<b>Sudo Admin:</b> {}" \
                  "\n<b>User:</b> {}" \
                  "\n<b>ID:</b> <code>{}</code>".format(mention_html(banner.id, banner.first_name),
-                                                       mention_html(user_chat.id, user_chat.first_name), 
-                                                                    user_chat.id),
-                html=True)
+                                                       mention_html(user_chat.id, user_chat.first_name),
+                                                       user_chat.id),
+                 html=True)
 
     chats = get_all_chats()
     for chat in chats:
@@ -194,8 +195,8 @@ def ungban(update: Update, context: CallbackContext):
     sql.ungban_user(user_id)
 
     send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
-                  "{} has been successfully un-gbanned!".format(mention_html(user_chat.id,
-                                                                         user_chat.first_name)),
+                 "{} has been successfully un-gbanned!".format(mention_html(user_chat.id,
+                                                                            user_chat.first_name)),
                  html=True)
 
     message.reply_text("Person has been un-gbanned.")
@@ -231,7 +232,8 @@ def check_and_ban(update, user_id, should_message=True):
 @run_async
 def enforce_gban(update: Update, context: CallbackContext):
     # Not using @restrict handler to avoid spamming - just ignore if cant gban.
-    if sql.does_chat_gban(update.effective_chat.id) and update.effective_chat.get_member(context.bot.id).can_restrict_members:
+    if sql.does_chat_gban(update.effective_chat.id) and update.effective_chat.get_member(
+            context.bot.id).can_restrict_members:
         user = update.effective_user  # type: Optional[User]
         chat = update.effective_chat  # type: Optional[Chat]
         msg = update.effective_message  # type: Optional[Message]

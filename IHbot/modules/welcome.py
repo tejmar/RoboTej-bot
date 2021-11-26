@@ -107,7 +107,8 @@ def new_member(update: Update, context: CallbackContext):
                                          can_send_other_messages=False, can_add_web_page_previews=False,
                                          until_date=(int(time.time() + 24 * 60 * 60 * 365 * 100)))
                 LOGGER.warning(update)
-                LOGGER.info("INFO: TOTALLY muting user %s for 100 years in chat %s (%s) due to CAS saying: %s", mems.id, chat.title,
+                LOGGER.info("INFO: TOTALLY muting user %s for 100 years in chat %s (%s) due to CAS saying: %s", mems.id,
+                            chat.title,
                             chat.id,
                             cas.offenses(cas_result))
             except BadRequest as excp:

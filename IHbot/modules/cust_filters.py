@@ -180,8 +180,8 @@ def reply_filter(update: Update, context: CallbackContext):
                                            "again, or ask in @MarieSupport for help.")
                     elif excp.message == "Reply message not found":
                         context.bot.send_message(chat.id, filt.reply, parse_mode=ParseMode.MARKDOWN,
-                                         disable_web_page_preview=True,
-                                         reply_markup=keyboard)
+                                                 disable_web_page_preview=True,
+                                                 reply_markup=keyboard)
                     else:
                         message.reply_text("This note could not be sent, as it is incorrectly formatted. Ask in "
                                            "@MarieSupport if you can't figure out why!")

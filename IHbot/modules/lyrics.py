@@ -8,13 +8,14 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 
 LYRICSINFO = "\n[Full Lyrics](http://lyrics.wikia.com/wiki/%s:%s)"
 
+
 @run_async
 def lyrics(update: Update, context: CallbackContext):
     message = update.effective_message
     text = message.text[len('/lyrics '):]
     song = " ".join(args).split("- ")
     reply_text = f'Looks up for lyrics'
-    
+
     if len(song) == 2:
         while song[1].startswith(" "):
             song[1] = song[1][1:]

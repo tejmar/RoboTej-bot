@@ -29,8 +29,9 @@
 
 # https://github.com/nunopenim/pyCombotCAS_API
 
-import json
 import datetime
+import json
+
 import requests
 
 VERSION = "1.4.0"

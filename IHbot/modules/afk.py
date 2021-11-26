@@ -65,6 +65,7 @@ def reply_afk(update: Update, context: CallbackContext):
         fst_name = message.reply_to_message.from_user.first_name
         check_afk(context.bot, update, user_id, fst_name)
 
+
 def check_afk(bot, update, user_id, fst_name):
     if sql.is_afk(user_id):
         valid, reason = sql.check_afk_status(user_id)
@@ -74,6 +75,7 @@ def check_afk(bot, update, user_id, fst_name):
             else:
                 res = "{} is HIDDEN! says its because of:\n{}".format(fst_name, reason)
             update.message.reply_text(res)
+
 
 def __gdpr__(user_id):
     sql.rm_afk(user_id)
@@ -90,8 +92,8 @@ __mod_name__ = "AFK"
 
 AFK_HANDLER = DisableAbleCommandHandler("afk", afk)
 AFK_REGEX_HANDLER = DisableAbleRegexHandler("(?i)brb", afk, friendly="afk")
-NO_AFK_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups , no_longer_afk)
-AFK_REPLY_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups , reply_afk)
+NO_AFK_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, no_longer_afk)
+AFK_REPLY_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, reply_afk)
 
 dispatcher.add_handler(AFK_HANDLER, AFK_GROUP)
 dispatcher.add_handler(AFK_REGEX_HANDLER, AFK_GROUP)

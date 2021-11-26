@@ -24,6 +24,7 @@ GKICK_ERRORS = {
     "Reply message not found"
 }
 
+
 @run_async
 def gkick(update: Update, context: CallbackContext):
     message = update.effective_message
@@ -37,7 +38,7 @@ def gkick(update: Update, context: CallbackContext):
             message.reply_text("User cannot be Globally kicked because: {}".format(excp.message))
             return
     except TelegramError:
-            pass
+        pass
 
     if not user_id:
         message.reply_text("You do not seems to be referring to a user")
@@ -55,7 +56,7 @@ def gkick(update: Update, context: CallbackContext):
     message.reply_text("Globally kicking user @{}".format(user_chat.username))
     for chat in chats:
         try:
-             context.bot.unban_chat_member(chat.chat_id, user_id)  # Unban_member = kick (and not ban)
+            context.bot.unban_chat_member(chat.chat_id, user_id)  # Unban_member = kick (and not ban)
         except BadRequest as excp:
             if excp.message in GKICK_ERRORS:
                 pass
@@ -65,7 +66,8 @@ def gkick(update: Update, context: CallbackContext):
         except TelegramError:
             pass
 
+
 GKICK_HANDLER = CommandHandler("gkick", gkick, pass_args=True,
-                              filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
+                               filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 
 dispatcher.add_handler(GKICK_HANDLER)
