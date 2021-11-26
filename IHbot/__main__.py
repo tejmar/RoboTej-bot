@@ -123,7 +123,7 @@ def test(bot: Bot, update: Update):
     print(update.effective_message)
 
 
-def start(bot: Bot, update: Update, args: List[str]):
+def start(bot: Bot, update: Update, args: List[str] = None):
     bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     if update.effective_chat.type == "private":
         if len(args) >= 1:
