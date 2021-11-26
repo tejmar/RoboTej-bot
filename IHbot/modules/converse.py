@@ -150,6 +150,6 @@ __help__ = """
 __mod_name__ = "Converse"
 
 
-CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse, run_async=False)
+CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse, run_async=True)
 
 dispatcher.add_handler(CONVERSE_HANDLER)
