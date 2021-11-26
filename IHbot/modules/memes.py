@@ -4,7 +4,7 @@ import re
 from certifi.__main__ import args
 from spongemock import spongemock
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler

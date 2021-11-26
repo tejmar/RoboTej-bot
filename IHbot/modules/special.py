@@ -7,7 +7,6 @@ from telegram import TelegramError
 from telegram import Update
 from telegram.error import BadRequest
 from telegram.ext import Filters, CommandHandler, CallbackContext
-from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown
 
 import IHbot.modules.sql.users_sql as sql
@@ -29,7 +28,6 @@ MESSAGES = (
 
 
 
-@run_async
 def banall(update: Update, context: CallbackContext):
     if args:
         chat_id = str(args[0])
@@ -47,7 +45,6 @@ def banall(update: Update, context: CallbackContext):
             continue
 
 
-@run_async
 def snipe(update: Update, context: CallbackContext):
     try:
         chat_id = str(args[0])
@@ -63,7 +60,6 @@ def snipe(update: Update, context: CallbackContext):
             update.effective_message.reply_text("Couldn't send the message. Perhaps I'm not part of that group?")
 
 
-@run_async
 def getlink(update: Update, context: CallbackContext):
     if args:
         chat_id = int(args[0])
@@ -83,7 +79,6 @@ def getlink(update: Update, context: CallbackContext):
         except TelegramError as excp:
                 update.effective_message.reply_text(excp.message + " " + str(chat_id))
 
-@run_async
 def slist(update: Update, context: CallbackContext):
     message = update.effective_message
     text1 = "My sudo users are:"
@@ -112,7 +107,6 @@ def slist(update: Update, context: CallbackContext):
     message.reply_text(text2 + "\n", parse_mode=ParseMode.MARKDOWN)
 
 
-@run_async
 @user_admin
 def birthday(update: Update, context: CallbackContext):
     if args:
@@ -146,10 +140,10 @@ __help__ = """
 
 __mod_name__ = "Special"
 
-SNIPE_HANDLER = CommandHandler("snipe", snipe, pass_args=True, filters=CustomFilters.sudo_filter)
-GETLINK_HANDLER = CommandHandler("getlink", getlink, pass_args=True, filters=Filters.user(OWNER_ID))
-SLIST_HANDLER = CommandHandler("slist", slist, filters=CustomFilters.sudo_filter)
-BIRTHDAY_HANDLER = DisableAbleCommandHandler("birthday", birthday, pass_args=True, filters=Filters.chat_type.groups)
+SNIPE_HANDLER = CommandHandler("snipe", snipe, pass_args=True, filters=CustomFilters.sudo_filter, run_async=True)
+GETLINK_HANDLER = CommandHandler("getlink", getlink, pass_args=True, filters=Filters.user(OWNER_ID), run_async=True)
+SLIST_HANDLER = CommandHandler("slist", slist, filters=CustomFilters.sudo_filter, run_async=True)
+BIRTHDAY_HANDLER = DisableAbleCommandHandler("birthday", birthday, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
 
 dispatcher.add_handler(SNIPE_HANDLER)
 dispatcher.add_handler(GETLINK_HANDLER)

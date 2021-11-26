@@ -6,7 +6,6 @@ from telegram import Message, Chat, Update, User
 from telegram import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, Filters, CallbackContext
-from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown, mention_html
 
 from IHbot import dispatcher
@@ -16,7 +15,6 @@ from IHbot.modules.helper_funcs.extraction import extract_user
 from IHbot.modules.log_channel import loggable
 
 
-@run_async
 @bot_admin
 @can_promote
 @user_admin
@@ -63,7 +61,6 @@ def promote(update: Update, context: CallbackContext) -> str:
                                       mention_html(user_member.user.id, user_member.user.first_name))
 
 
-@run_async
 @bot_admin
 @can_promote
 @user_admin
@@ -115,7 +112,6 @@ def demote(update: Update, context: CallbackContext) -> str:
         return ""
 
 
-@run_async
 @bot_admin
 @can_pin
 @user_admin
@@ -147,7 +143,6 @@ def pin(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @bot_admin
 @can_pin
 @user_admin
@@ -170,7 +165,6 @@ def unpin(update: Update, context: CallbackContext) -> str:
                                        mention_html(user.id, user.first_name))
 
 
-@run_async
 @bot_admin
 @user_admin
 def invite(update: Update, context: CallbackContext):
@@ -188,7 +182,6 @@ def invite(update: Update, context: CallbackContext):
         update.effective_message.reply_text("I can only give you invite links for supergroups and channels, sorry!")
 
 
-@run_async
 def adminlist(update: Update, context: CallbackContext):
     administrators = update.effective_chat.get_administrators()
     text = "Admins in *{}*:".format(update.effective_chat.title or "this chat")
@@ -231,15 +224,15 @@ __help__ = """
 
 __mod_name__ = "Admin"
 
-PIN_HANDLER = CommandHandler("pin", pin, pass_args=True, filters=Filters.chat_type.groups)
-UNPIN_HANDLER = CommandHandler("unpin", unpin, filters=Filters.chat_type.groups)
+PIN_HANDLER = CommandHandler("pin", pin, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+UNPIN_HANDLER = CommandHandler("unpin", unpin, filters=Filters.chat_type.groups, run_async=True)
 
-INVITE_HANDLER = CommandHandler("invitelink", invite, filters=Filters.chat_type.groups)
+INVITE_HANDLER = CommandHandler("invitelink", invite, filters=Filters.chat_type.groups, run_async=True)
 
-PROMOTE_HANDLER = CommandHandler("promote", promote, pass_args=True, filters=Filters.chat_type.groups)
-DEMOTE_HANDLER = CommandHandler("demote", demote, pass_args=True, filters=Filters.chat_type.groups)
+PROMOTE_HANDLER = CommandHandler("promote", promote, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+DEMOTE_HANDLER = CommandHandler("demote", demote, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
 
-ADMINLIST_HANDLER = DisableAbleCommandHandler("adminlist", adminlist, filters=Filters.chat_type.groups)
+ADMINLIST_HANDLER = DisableAbleCommandHandler("adminlist", adminlist, filters=Filters.chat_type.groups, run_async=True)
 
 dispatcher.add_handler(PIN_HANDLER)
 dispatcher.add_handler(UNPIN_HANDLER)

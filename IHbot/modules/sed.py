@@ -3,7 +3,7 @@ import sre_constants
 
 import telegram
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 
 from IHbot import dispatcher, LOGGER
 from IHbot.modules.disable import DisableAbleRegexHandler

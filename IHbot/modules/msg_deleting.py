@@ -6,7 +6,6 @@ from certifi.__main__ import args
 from telegram import Message, Chat, Update, User
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, Filters, CallbackContext
-from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 from IHbot import dispatcher, LOGGER
@@ -14,7 +13,6 @@ from IHbot.modules.helper_funcs.chat_status import user_admin, can_delete
 from IHbot.modules.log_channel import loggable
 
 
-@run_async
 @user_admin
 @loggable
 def purge(update: Update, context: CallbackContext) -> str:
@@ -64,7 +62,6 @@ def purge(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @user_admin
 @loggable
 def del_message(update: Update, context: CallbackContext) -> str:
@@ -94,8 +91,8 @@ __help__ = """
 
 __mod_name__ = "Purges"
 
-DELETE_HANDLER = CommandHandler("del", del_message, filters=Filters.chat_type.groups)
-PURGE_HANDLER = CommandHandler("purge", purge, filters=Filters.chat_type.groups, pass_args=True)
+DELETE_HANDLER = CommandHandler("del", del_message, filters=Filters.chat_type.groups, run_async=True)
+PURGE_HANDLER = CommandHandler("purge", purge, filters=Filters.chat_type.groups, pass_args=True, run_async=True)
 
 dispatcher.add_handler(DELETE_HANDLER)
 dispatcher.add_handler(PURGE_HANDLER)

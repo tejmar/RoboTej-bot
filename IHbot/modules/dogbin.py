@@ -1,7 +1,7 @@
 import requests
 from certifi.__main__ import args
 from telegram import Update, ParseMode
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher

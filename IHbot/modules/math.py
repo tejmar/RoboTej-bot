@@ -4,7 +4,7 @@ import math
 import pynewtonmath as newton
 from certifi.__main__ import args
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler

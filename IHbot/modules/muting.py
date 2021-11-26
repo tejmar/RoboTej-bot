@@ -6,7 +6,6 @@ from telegram import Message, Chat, Update
 from telegram import ParseMode, User
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, Filters, CallbackContext
-from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 from IHbot import dispatcher, LOGGER
@@ -16,7 +15,6 @@ from IHbot.modules.helper_funcs.string_handling import extract_time
 from IHbot.modules.log_channel import loggable
 
 
-@run_async
 @bot_admin
 @user_admin
 @loggable
@@ -61,7 +59,6 @@ def mute(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @bot_admin
 @user_admin
 @loggable
@@ -104,7 +101,6 @@ def unmute(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @bot_admin
 @can_restrict
 @user_admin
@@ -185,7 +181,6 @@ def temp_mute(update: Update, context: CallbackContext) -> str:
 
     return ""
 
-@run_async
 @bot_admin
 @user_admin
 @loggable
@@ -232,7 +227,6 @@ def nomedia(update: Update, context: CallbackContext) -> str:
 
     return ""
 
-@run_async
 @bot_admin
 @user_admin
 @loggable
@@ -274,7 +268,6 @@ def media(update: Update, context: CallbackContext) -> str:
 
     return ""
 
-@run_async
 @bot_admin
 @can_restrict
 @user_admin
@@ -371,12 +364,12 @@ __help__ = """
 
 __mod_name__ = "Muting & Restricting"
 
-MUTE_HANDLER = CommandHandler("mute", mute, pass_args=True, filters=Filters.chat_type.groups)
-UNMUTE_HANDLER = CommandHandler("unmute", unmute, pass_args=True, filters=Filters.chat_type.groups)
-TEMPMUTE_HANDLER = CommandHandler(["tmute", "tempmute"], temp_mute, pass_args=True, filters=Filters.chat_type.groups)
-TEMP_NOMEDIA_HANDLER = CommandHandler(["trestrict", "temprestrict"], temp_nomedia, pass_args=True, filters=Filters.chat_type.groups)
-NOMEDIA_HANDLER = CommandHandler(["restrict", "nomedia"], nomedia, pass_args=True, filters=Filters.chat_type.groups)
-MEDIA_HANDLER = CommandHandler("unrestrict", media, pass_args=True, filters=Filters.chat_type.groups)
+MUTE_HANDLER = CommandHandler("mute", mute, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+UNMUTE_HANDLER = CommandHandler("unmute", unmute, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+TEMPMUTE_HANDLER = CommandHandler(["tmute", "tempmute"], temp_mute, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+TEMP_NOMEDIA_HANDLER = CommandHandler(["trestrict", "temprestrict"], temp_nomedia, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+NOMEDIA_HANDLER = CommandHandler(["restrict", "nomedia"], nomedia, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+MEDIA_HANDLER = CommandHandler("unrestrict", media, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
 
 dispatcher.add_handler(MUTE_HANDLER)
 dispatcher.add_handler(UNMUTE_HANDLER)

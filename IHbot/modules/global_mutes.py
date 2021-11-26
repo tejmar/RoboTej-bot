@@ -5,7 +5,7 @@ from typing import Optional
 from certifi.__main__ import args
 from telegram import Message, Update, User, Chat
 from telegram.error import BadRequest, TelegramError
-from telegram.ext import run_async, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
 from telegram.utils.helpers import mention_html
 
 import IHbot.modules.sql.global_mutes_sql as sql
@@ -19,7 +19,6 @@ from IHbot.modules.sql.users_sql import get_all_chats
 GMUTE_ENFORCE_GROUP = 6
 
 
-@run_async
 def gmute(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
 
@@ -130,7 +129,6 @@ def gmute(update: Update, context: CallbackContext):
 
     message.reply_text("They won't be talking again anytime soon.")
 
-@run_async
 def ungmute(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
 
@@ -215,7 +213,6 @@ def ungmute(update: Update, context: CallbackContext):
     message.reply_text("Fine 😏 , I will let them speak ! ")
 
 
-@run_async
 def gmutelist(update: Update, context: CallbackContext):
     muted_users = sql.get_gmute_list()
 
@@ -242,7 +239,6 @@ def check_and_mute(bot, update, user_id, should_message=True):
             update.effective_message.reply_text("This is a bad person, I'll silence them for you!")
 
 
-@run_async
 def enforce_gmute(update: Update, context: CallbackContext):
     # Not using @restrict handler to avoid spamming - just ignore if cant gmute.
     if sql.does_chat_gmute(update.effective_chat.id) and update.effective_chat.get_member(context.bot.id).can_restrict_members:
@@ -261,7 +257,6 @@ def enforce_gmute(update: Update, context: CallbackContext):
             if user and not is_user_admin(chat, user.id):
                 check_and_mute(context.bot, update, user.id, should_message=True)
 
-@run_async
 @user_admin
 def gmutestat(update: Update, context: CallbackContext):
     if len(args) > 0:
@@ -319,15 +314,15 @@ you and your groups by removing spam flooders as quickly as possible. They can b
 __mod_name__ = "Global Mutes"
 
 GMUTE_HANDLER = CommandHandler("gmute", gmute, pass_args=True,
-                              filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
+                              filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
 UNGMUTE_HANDLER = CommandHandler("ungmute", ungmute, pass_args=True,
-                                filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
+                                filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
 GMUTE_LIST = CommandHandler("gmutelist", gmutelist,
-                           filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
+                           filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
 
-GMUTE_STATUS = CommandHandler("gmutestat", gmutestat, pass_args=True, filters=Filters.chat_type.groups)
+GMUTE_STATUS = CommandHandler("gmutestat", gmutestat, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
 
-GMUTE_ENFORCER = MessageHandler(Filters.all & Filters.chat_type.groups, enforce_gmute)
+GMUTE_ENFORCER = MessageHandler(Filters.all & Filters.chat_type.groups, enforce_gmute, run_async=True)
 
 dispatcher.add_handler(GMUTE_HANDLER)
 dispatcher.add_handler(UNGMUTE_HANDLER)
