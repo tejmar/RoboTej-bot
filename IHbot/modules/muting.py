@@ -19,7 +19,7 @@ from IHbot.modules.log_channel import loggable
 @bot_admin
 @user_admin
 @loggable
-def mute(bot: Bot, update: Update, args: List[str]) -> str:
+def mute(bot: Bot, update: Update, args: List[str] = None) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -64,7 +64,7 @@ def mute(bot: Bot, update: Update, args: List[str]) -> str:
 @bot_admin
 @user_admin
 @loggable
-def unmute(bot: Bot, update: Update, args: List[str]) -> str:
+def unmute(bot: Bot, update: Update, args: List[str] = None) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -108,7 +108,7 @@ def unmute(bot: Bot, update: Update, args: List[str]) -> str:
 @can_restrict
 @user_admin
 @loggable
-def temp_mute(bot: Bot, update: Update, args: List[str]) -> str:
+def temp_mute(bot: Bot, update: Update, args: List[str] = None) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -188,7 +188,7 @@ def temp_mute(bot: Bot, update: Update, args: List[str]) -> str:
 @bot_admin
 @user_admin
 @loggable
-def nomedia(bot: Bot, update: Update, args: List[str]) -> str:
+def nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -235,7 +235,7 @@ def nomedia(bot: Bot, update: Update, args: List[str]) -> str:
 @bot_admin
 @user_admin
 @loggable
-def media(bot: Bot, update: Update, args: List[str]) -> str:
+def media(bot: Bot, update: Update, args: List[str] = None) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -278,7 +278,7 @@ def media(bot: Bot, update: Update, args: List[str]) -> str:
 @can_restrict
 @user_admin
 @loggable
-def temp_nomedia(bot: Bot, update: Update, args: List[str]) -> str:
+def temp_nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]

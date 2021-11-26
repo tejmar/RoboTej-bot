@@ -13,7 +13,7 @@ from IHbot.modules.helper_funcs.extraction import extract_user
 
 
 @run_async
-def about_me(bot: Bot, update: Update, args: List[str]):
+def about_me(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message  # type: Optional[Message]
     user_id = extract_user(message, args)
 
@@ -50,7 +50,7 @@ def set_about_me(bot: Bot, update: Update):
 
 
 @run_async
-def about_bio(bot: Bot, update: Update, args: List[str]):
+def about_bio(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message  # type: Optional[Message]
 
     user_id = extract_user(message, args)

@@ -48,7 +48,7 @@ def banall(bot: Bot, update: Update, args: List[int]):
 
 
 @run_async
-def snipe(bot: Bot, update: Update, args: List[str]):
+def snipe(bot: Bot, update: Update, args: List[str] = None):
     try:
         chat_id = str(args[0])
         del args[0]
@@ -114,7 +114,7 @@ def slist(bot: Bot, update: Update):
 
 @run_async
 @user_admin
-def birthday(bot: Bot, update: Update, args: List[str]):
+def birthday(bot: Bot, update: Update, args: List[str] = None):
     if args:
         username = str(",".join(args))
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages

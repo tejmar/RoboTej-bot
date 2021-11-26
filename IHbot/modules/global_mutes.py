@@ -19,7 +19,7 @@ GMUTE_ENFORCE_GROUP = 6
 
 
 @run_async
-def gmute(bot: Bot, update: Update, args: List[str]):
+def gmute(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message  # type: Optional[Message]
 
     user_id, reason = extract_user_and_text(message, args)
@@ -130,7 +130,7 @@ def gmute(bot: Bot, update: Update, args: List[str]):
     message.reply_text("They won't be talking again anytime soon.")
 
 @run_async
-def ungmute(bot: Bot, update: Update, args: List[str]):
+def ungmute(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message  # type: Optional[Message]
 
     user_id = extract_user(message, args)
@@ -262,7 +262,7 @@ def enforce_gmute(bot: Bot, update: Update):
 
 @run_async
 @user_admin
-def gmutestat(bot: Bot, update: Update, args: List[str]):
+def gmutestat(bot: Bot, update: Update, args: List[str] = None):
     if len(args) > 0:
         if args[0].lower() in ["on", "yes"]:
             sql.enable_gmutes(update.effective_chat.id)

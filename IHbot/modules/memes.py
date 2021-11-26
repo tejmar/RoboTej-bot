@@ -82,7 +82,7 @@ def stretch(bot: Bot, update: Update):
     message.reply_to_message.reply_text(reply_text)
 
 @run_async
-def vapor(bot: Bot, update: Update, args: List[str]):
+def vapor(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
 
     if not message.reply_to_message:

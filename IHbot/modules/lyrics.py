@@ -11,7 +11,7 @@ from requests import get
 LYRICSINFO = "\n[Full Lyrics](http://lyrics.wikia.com/wiki/%s:%s)"
 
 @run_async
-def lyrics(bot: Bot, update: Update, args: List[str]):
+def lyrics(bot: Bot, update: Update, args: List[str] = None):
     message = update.effective_message
     text = message.text[len('/lyrics '):]
     song = " ".join(args).split("- ")
