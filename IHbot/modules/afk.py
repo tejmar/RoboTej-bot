@@ -2,7 +2,7 @@ from typing import Optional
 
 from telegram import Message, Update, User
 from telegram import MessageEntity
-from telegram.ext import Filters, MessageHandler, run_async, CallbackContext
+from telegram.ext import Filters, MessageHandler, CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
@@ -13,7 +13,6 @@ AFK_GROUP = 7
 AFK_REPLY_GROUP = 8
 
 
-@run_async
 def afk(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
     if len(args) >= 2:
@@ -25,7 +24,6 @@ def afk(update: Update, context: CallbackContext):
     update.effective_message.reply_text("{} is now HIDING!".format(update.effective_user.first_name))
 
 
-@run_async
 def no_longer_afk(update: Update, context: CallbackContext):
     user = update.effective_user  # type: Optional[User]
 
@@ -37,7 +35,6 @@ def no_longer_afk(update: Update, context: CallbackContext):
         update.effective_message.reply_text("{} has returned!".format(update.effective_user.first_name))
 
 
-@run_async
 def reply_afk(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     entities = message.parse_entities([MessageEntity.TEXT_MENTION, MessageEntity.MENTION])
@@ -90,10 +87,10 @@ When marked as AFK, any mentions will be replied to with a message to say you're
 
 __mod_name__ = "AFK"
 
-AFK_HANDLER = DisableAbleCommandHandler("afk", afk)
-AFK_REGEX_HANDLER = DisableAbleRegexHandler("(?i)brb", afk, friendly="afk")
-NO_AFK_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, no_longer_afk)
-AFK_REPLY_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, reply_afk)
+AFK_HANDLER = DisableAbleCommandHandler("afk", afk, run_async=True)
+AFK_REGEX_HANDLER = DisableAbleRegexHandler("(?i)brb", afk, friendly="afk", run_async=True)
+NO_AFK_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, no_longer_afk, run_async=True)
+AFK_REPLY_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, reply_afk, run_async=True)
 
 dispatcher.add_handler(AFK_HANDLER, AFK_GROUP)
 dispatcher.add_handler(AFK_REGEX_HANDLER, AFK_GROUP)

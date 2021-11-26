@@ -3,7 +3,7 @@ from typing import Optional
 from telegram import Message, Update, User
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, run_async, Filters, CallbackContext
+from telegram.ext import CommandHandler, Filters, CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 import IHbot.modules.sql.rules_sql as sql
@@ -12,7 +12,6 @@ from IHbot.modules.helper_funcs.chat_status import user_admin
 from IHbot.modules.helper_funcs.string_handling import markdown_parser
 
 
-@run_async
 def get_rules(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     send_rules(update, chat_id)
@@ -51,7 +50,6 @@ def send_rules(update, chat_id, from_pm=False):
                                             "This probably doesn't mean it's lawless though...!")
 
 
-@run_async
 @user_admin
 def set_rules(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
@@ -67,7 +65,6 @@ def set_rules(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Successfully set rules for this group.")
 
 
-@run_async
 @user_admin
 def clear_rules(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
@@ -103,9 +100,9 @@ __help__ = """
 
 __mod_name__ = "Rules"
 
-GET_RULES_HANDLER = CommandHandler("rules", get_rules, filters=Filters.chat_type.groups)
-SET_RULES_HANDLER = CommandHandler("setrules", set_rules, filters=Filters.chat_type.groups)
-RESET_RULES_HANDLER = CommandHandler("clearrules", clear_rules, filters=Filters.chat_type.groups)
+GET_RULES_HANDLER = CommandHandler("rules", get_rules, filters=Filters.chat_type.groups, run_async=True)
+SET_RULES_HANDLER = CommandHandler("setrules", set_rules, filters=Filters.chat_type.groups, run_async=True)
+RESET_RULES_HANDLER = CommandHandler("clearrules", clear_rules, filters=Filters.chat_type.groups, run_async=True)
 
 dispatcher.add_handler(GET_RULES_HANDLER)
 dispatcher.add_handler(SET_RULES_HANDLER)

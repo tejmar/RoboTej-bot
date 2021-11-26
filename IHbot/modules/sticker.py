@@ -4,14 +4,13 @@ import os
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import TelegramError
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
 
 
-@run_async
 def stickerid(update: Update):
     msg = update.effective_message
     if msg.reply_to_message and msg.reply_to_message.sticker:
@@ -26,7 +25,6 @@ def stickerid(update: Update):
                                             parse_mode=ParseMode.MARKDOWN)
 
 
-@run_async
 def getsticker(update: Update, context: CallbackContext):
     msg = update.effective_message
     chat_id = update.effective_chat.id
@@ -49,7 +47,6 @@ def getsticker(update: Update, context: CallbackContext):
                                             parse_mode=ParseMode.MARKDOWN)
 
 
-@run_async
 def kang(update: Update, context: CallbackContext):
     msg = update.effective_message
     user = update.effective_user
@@ -111,9 +108,9 @@ __help__ = """
 
 __mod_name__ = "Stickers"
 
-STICKERID_HANDLER = DisableAbleCommandHandler("stickerid", stickerid)
-GETSTICKER_HANDLER = DisableAbleCommandHandler("getsticker", getsticker)
-KANG_HANDLER = DisableAbleCommandHandler("kang", kang)
+STICKERID_HANDLER = DisableAbleCommandHandler("stickerid", stickerid, run_async=True)
+GETSTICKER_HANDLER = DisableAbleCommandHandler("getsticker", getsticker, run_async=True)
+KANG_HANDLER = DisableAbleCommandHandler("kang", kang, run_async=True)
 
 dispatcher.add_handler(STICKERID_HANDLER)
 dispatcher.add_handler(GETSTICKER_HANDLER)

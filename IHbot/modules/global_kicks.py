@@ -25,7 +25,6 @@ GKICK_ERRORS = {
 }
 
 
-@run_async
 def gkick(update: Update, context: CallbackContext):
     message = update.effective_message
     user_id = extract_user(message, args)
@@ -68,6 +67,6 @@ def gkick(update: Update, context: CallbackContext):
 
 
 GKICK_HANDLER = CommandHandler("gkick", gkick, pass_args=True,
-                               filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
+                               filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
 
 dispatcher.add_handler(GKICK_HANDLER)

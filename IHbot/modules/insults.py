@@ -1,7 +1,7 @@
 import random
 
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
@@ -72,7 +72,6 @@ SFW_STRINGS = (
 )
 
 
-@run_async
 def insult(update: Update, context: CallbackContext):
     context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     message = update.effective_message
@@ -88,6 +87,6 @@ __help__ = """
 
 __mod_name__ = "Insults"
 
-INSULT_HANDLER = DisableAbleCommandHandler("insult", insult)
+INSULT_HANDLER = DisableAbleCommandHandler("insult", insult, run_async=True)
 
 dispatcher.add_handler(INSULT_HANDLER)

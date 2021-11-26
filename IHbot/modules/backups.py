@@ -4,14 +4,13 @@ from typing import Optional
 
 from telegram import Message, Chat, Update
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, run_async, CallbackContext
+from telegram.ext import CommandHandler, CallbackContext
 
 from IHbot import dispatcher, LOGGER
 from IHbot.__main__ import DATA_IMPORT
 from IHbot.modules.helper_funcs.chat_status import user_admin
 
 
-@run_async
 @user_admin
 def import_data(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
@@ -59,7 +58,6 @@ def import_data(update: Update, context: CallbackContext):
         msg.reply_text("Backup fully imported. Welcome back! :D")
 
 
-@run_async
 @user_admin
 def export_data(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
@@ -74,8 +72,8 @@ __help__ = """
 that files/photos can't be imported due to telegram restrictions.
  - /export: !!! This isn't a command yet, but should be coming soon!
 """
-IMPORT_HANDLER = CommandHandler("import", import_data)
-EXPORT_HANDLER = CommandHandler("export", export_data)
+IMPORT_HANDLER = CommandHandler("import", import_data, run_async=True)
+EXPORT_HANDLER = CommandHandler("export", export_data, run_async=True)
 
 dispatcher.add_handler(IMPORT_HANDLER)
 # dispatcher.add_handler(EXPORT_HANDLER)

@@ -7,7 +7,6 @@ from telegram import Message, Chat, Update, ParseMode, User, MessageEntity
 from telegram import TelegramError
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
-from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 import IHbot.modules.sql.locks_sql as sql
@@ -94,7 +93,6 @@ def unrestr_members(bot, chat_id, members, messages=True, media=True, other=True
             pass
 
 
-@run_async
 def locktypes(update: Update, context: CallbackContext):
     update.effective_message.reply_text("\n - ".join(["Locks: "] + list(LOCK_TYPES) + list(RESTRICTION_TYPES)))
 
@@ -140,7 +138,6 @@ def lock(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @user_admin
 @loggable
 def unlock(update: Update, context: CallbackContext) -> str:
@@ -193,7 +190,6 @@ def unlock(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @user_not_admin
 def del_lockables(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
@@ -225,7 +221,6 @@ def del_lockables(update: Update, context: CallbackContext):
             break
 
 
-@run_async
 @user_not_admin
 def rest_handler(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
@@ -277,7 +272,6 @@ def build_lock_message(chat_id):
     return res
 
 
-@run_async
 @user_admin
 def list_locks(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
@@ -312,15 +306,15 @@ Locking bots will stop non-admins from adding bots to the chat.
 
 __mod_name__ = "Locks"
 
-LOCKTYPES_HANDLER = DisableAbleCommandHandler("locktypes", locktypes)
-LOCK_HANDLER = CommandHandler("lock", lock, pass_args=True, filters=Filters.chat_type.groups)
-UNLOCK_HANDLER = CommandHandler("unlock", unlock, pass_args=True, filters=Filters.chat_type.groups)
-LOCKED_HANDLER = CommandHandler("locks", list_locks, filters=Filters.chat_type.groups)
+LOCKTYPES_HANDLER = DisableAbleCommandHandler("locktypes", locktypes, run_async=True)
+LOCK_HANDLER = CommandHandler("lock", lock, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+UNLOCK_HANDLER = CommandHandler("unlock", unlock, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+LOCKED_HANDLER = CommandHandler("locks", list_locks, filters=Filters.chat_type.groups, run_async=True)
 
 dispatcher.add_handler(LOCK_HANDLER)
 dispatcher.add_handler(UNLOCK_HANDLER)
 dispatcher.add_handler(LOCKTYPES_HANDLER)
 dispatcher.add_handler(LOCKED_HANDLER)
 
-dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, del_lockables), PERM_GROUP)
-dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, rest_handler), REST_GROUP)
+dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, del_lockables), PERM_GROUP, run_async=True)
+dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, rest_handler), REST_GROUP, run_async=True)

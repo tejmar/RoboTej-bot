@@ -1,7 +1,7 @@
 from PyLyrics import *
 from certifi.__main__ import args
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
@@ -9,7 +9,6 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 LYRICSINFO = "\n[Full Lyrics](http://lyrics.wikia.com/wiki/%s:%s)"
 
 
-@run_async
 def lyrics(update: Update, context: CallbackContext):
     message = update.effective_message
     text = message.text[len('/lyrics '):]
@@ -29,13 +28,13 @@ def lyrics(update: Update, context: CallbackContext):
             lyrics = "\n".join(PyLyrics.getLyrics(
                 song[0], song[1]).split("\n")[:20])
         except ValueError as e:
-            return update.effective_message.reply_text("Song %s not found :(" % song[1], failed=True)
+            return update.effective_message.reply_text("Song %s not found :(" % song[1])
         else:
             lyricstext = LYRICSINFO % (song[0].replace(
                 " ", "_"), song[1].replace(" ", "_"))
             return update.effective_message.reply_text(lyrics + lyricstext, parse_mode="MARKDOWN")
     else:
-        return update.effective_message.reply_text("Invalid syntax- try Artist - Title!", failed=True)
+        return update.effective_message.reply_text("Invalid syntax- try Artist - Title!")
 
 
 __help__ = """
@@ -44,6 +43,6 @@ __help__ = """
 
 __mod_name__ = "Lyrics"
 
-LYRICS_HANDLER = DisableAbleCommandHandler("lyrics", lyrics, pass_args=True)
+LYRICS_HANDLER = DisableAbleCommandHandler("lyrics", lyrics, pass_args=True, run_async=True)
 
 dispatcher.add_handler(LYRICS_HANDLER)

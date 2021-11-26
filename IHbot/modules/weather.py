@@ -1,11 +1,9 @@
 import pyowm
-from telegram.ext import run_async
 
 from IHbot import dispatcher, API_WEATHER, BAN_STICKER
 from IHbot.modules.disable import DisableAbleCommandHandler
 
 
-@run_async
 def weather(bot, update, args):
     if len(args) == 0:
         update.effective_message.reply_text("Write a location to check the weather.")
@@ -65,6 +63,6 @@ __help__ = """
 
 __mod_name__ = "Weather"
 
-WEATHER_HANDLER = DisableAbleCommandHandler("weather", weather, pass_args=True)
+WEATHER_HANDLER = DisableAbleCommandHandler("weather", weather, pass_args=True, run_async=True)
 
 dispatcher.add_handler(WEATHER_HANDLER)

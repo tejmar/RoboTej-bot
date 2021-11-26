@@ -8,7 +8,7 @@ FILENAME = __name__.rsplit(".", 1)[-1]
 if is_module_loaded(FILENAME):
     from telegram import Bot, Update, ParseMode, Message, Chat
     from telegram.error import BadRequest, Unauthorized
-    from telegram.ext import CommandHandler, run_async, CallbackContext
+    from telegram.ext import CommandHandler, CallbackContext
     from telegram.utils.helpers import escape_markdown
 
     from IHbot import dispatcher, LOGGER
@@ -55,7 +55,6 @@ if is_module_loaded(FILENAME):
                 bot.send_message(log_chat_id, result + "\n\nFormatting has been disabled due to an unexpected error.")
 
 
-    @run_async
     @user_admin
     def logging(update: Update, context: CallbackContext):
         message = update.effective_message  # type: Optional[Message]
@@ -73,7 +72,6 @@ if is_module_loaded(FILENAME):
             message.reply_text("No log channel has been set for this group!")
 
 
-    @run_async
     @user_admin
     def setlog(update: Update, context: CallbackContext):
         bot = context.bot
@@ -111,7 +109,6 @@ if is_module_loaded(FILENAME):
                                " - forward the /setlog to the group\n")
 
 
-    @run_async
     @user_admin
     def unsetlog(update: Update, context: CallbackContext):
         message = update.effective_message  # type: Optional[Message]
@@ -157,9 +154,9 @@ Setting the log channel is done by:
 
     __mod_name__ = "Log Channels"
 
-    LOG_HANDLER = CommandHandler("logchannel", logging)
-    SET_LOG_HANDLER = CommandHandler("setlog", setlog)
-    UNSET_LOG_HANDLER = CommandHandler("unsetlog", unsetlog)
+    LOG_HANDLER = CommandHandler("logchannel", logging, run_async=True)
+    SET_LOG_HANDLER = CommandHandler("setlog", setlog, run_async=True)
+    UNSET_LOG_HANDLER = CommandHandler("unsetlog", unsetlog, run_async=True)
 
     dispatcher.add_handler(LOG_HANDLER)
     dispatcher.add_handler(SET_LOG_HANDLER)

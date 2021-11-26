@@ -1,7 +1,7 @@
 import random
 
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
@@ -25,7 +25,6 @@ reactions = ["( ͡° ͜ʖ ͡°)", "¯_(ツ)_/¯", "\'\'̵͇З= ( ▀ ͜͞ʖ▀) 
              "〆(・∀・＠)", "(~_^)", "^̮^", "^̮^", ">_>", "(^̮^)", "(/) (°,,°) (/)", "^̮^", "^̮^", "=U", "(･.◤)"]
 
 
-@run_async
 def react(update: Update, context: CallbackContext):
     message = update.effective_message
     react = random.choice(reactions)
@@ -41,6 +40,6 @@ __help__ = """
 
 __mod_name__ = "Reactions"
 
-REACT_HANDLER = DisableAbleCommandHandler("react", react)
+REACT_HANDLER = DisableAbleCommandHandler("react", react, run_async=True)
 
 dispatcher.add_handler(REACT_HANDLER)

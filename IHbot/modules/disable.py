@@ -15,7 +15,6 @@ FILENAME = __name__.rsplit(".", 1)[-1]
 # If module is due to be loaded, then setup all the magical handlers
 if is_module_loaded(FILENAME):
     from IHbot.modules.helper_funcs.chat_status import user_admin, is_user_admin
-    from telegram.ext.dispatcher import run_async
 
     from IHbot.modules.sql import disable_sql as sql
 
@@ -66,7 +65,6 @@ if is_module_loaded(FILENAME):
             return super().check_update(update) and not sql.is_command_disabled(chat.id, self.friendly)
 
 
-    @run_async
     @user_admin
     def disable(update: Update, context: CallbackContext):
         chat = update.effective_chat  # type: Optional[Chat]
@@ -86,7 +84,6 @@ if is_module_loaded(FILENAME):
             update.effective_message.reply_text("What should I disable?")
 
 
-    @run_async
     @user_admin
     def enable(update: Update, context: CallbackContext):
         chat = update.effective_chat  # type: Optional[Chat]
@@ -105,7 +102,6 @@ if is_module_loaded(FILENAME):
             update.effective_message.reply_text("What should I enable?")
 
 
-    @run_async
     @user_admin
     def list_cmds(update: Update, context: CallbackContext):
         if DISABLE_CMDS + DISABLE_OTHER:
@@ -130,7 +126,6 @@ if is_module_loaded(FILENAME):
         return "The following commands are currently restricted:\n{}".format(result)
 
 
-    @run_async
     def commands(update: Update, context: CallbackContext):
         chat = update.effective_chat
         update.effective_message.reply_text(build_curr_disabled(chat.id), parse_mode=ParseMode.MARKDOWN)
@@ -159,10 +154,10 @@ if is_module_loaded(FILENAME):
  - /listcmds: list all possible toggleable commands
     """
 
-    DISABLE_HANDLER = CommandHandler("disable", disable, pass_args=True, filters=Filters.chat_type.groups)
-    ENABLE_HANDLER = CommandHandler("enable", enable, pass_args=True, filters=Filters.chat_type.groups)
-    COMMANDS_HANDLER = CommandHandler(["cmds", "disabled"], commands, filters=Filters.chat_type.groups)
-    TOGGLE_HANDLER = CommandHandler("listcmds", list_cmds, filters=Filters.chat_type.groups)
+    DISABLE_HANDLER = CommandHandler("disable", disable, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+    ENABLE_HANDLER = CommandHandler("enable", enable, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+    COMMANDS_HANDLER = CommandHandler(["cmds", "disabled"], commands, filters=Filters.chat_type.groups, run_async=True)
+    TOGGLE_HANDLER = CommandHandler("listcmds", list_cmds, filters=Filters.chat_type.groups, run_async=True)
 
     dispatcher.add_handler(DISABLE_HANDLER)
     dispatcher.add_handler(ENABLE_HANDLER)

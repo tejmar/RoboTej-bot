@@ -4,7 +4,7 @@ from typing import Optional
 from certifi.__main__ import args
 from telegram import Message, Chat, Update, User, ParseMode
 from telegram.error import BadRequest
-from telegram.ext import run_async, CommandHandler, Filters, CallbackContext
+from telegram.ext import CommandHandler, Filters, CallbackContext
 from telegram.utils.helpers import mention_html
 
 from IHbot import dispatcher, BAN_STICKER, LOGGER, OWNER_ID
@@ -16,7 +16,6 @@ from IHbot.modules.helper_funcs.string_handling import extract_time
 from IHbot.modules.log_channel import loggable
 
 
-@run_async
 @bot_admin
 @can_restrict
 @user_admin
@@ -79,7 +78,6 @@ def ban(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @bot_admin
 @can_restrict
 @user_admin
@@ -164,7 +162,6 @@ def temp_ban(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @bot_admin
 @can_restrict
 @user_admin
@@ -221,7 +218,6 @@ def kick(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-@run_async
 @bot_admin
 @can_restrict
 def kickme(update: Update, context: CallbackContext):
@@ -240,7 +236,6 @@ def kickme(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Huh? I can't :/")
 
 
-@run_async
 @bot_admin
 @can_restrict
 @loggable
@@ -269,7 +264,6 @@ def banme(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Huh? I can't :/")
 
 
-@run_async
 @bot_admin
 @can_restrict
 @user_admin
@@ -317,7 +311,6 @@ def unban(update: Update, context: CallbackContext) -> str:
     return log
 
 
-@run_async
 @bot_admin
 @can_restrict
 @user_admin
@@ -384,13 +377,13 @@ __help__ = """
 
 __mod_name__ = "Bans"
 
-BAN_HANDLER = CommandHandler("ban", ban, pass_args=True, filters=Filters.chat_type.groups)
-TEMPBAN_HANDLER = CommandHandler(["tban", "tempban"], temp_ban, pass_args=True, filters=Filters.chat_type.groups)
-KICK_HANDLER = CommandHandler("kick", kick, pass_args=True, filters=Filters.chat_type.groups)
-UNBAN_HANDLER = CommandHandler("unban", unban, pass_args=True, filters=Filters.chat_type.groups)
-KICKME_HANDLER = DisableAbleCommandHandler("kickme", kickme, filters=Filters.chat_type.groups)
-BANME_HANDLER = DisableAbleCommandHandler("banme", banme, filters=Filters.chat_type.groups)
-SBAN_HANDLER = CommandHandler("sban", sban, pass_args=True, filters=Filters.chat_type.groups)
+BAN_HANDLER = CommandHandler("ban", ban, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+TEMPBAN_HANDLER = CommandHandler(["tban", "tempban"], temp_ban, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+KICK_HANDLER = CommandHandler("kick", kick, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+UNBAN_HANDLER = CommandHandler("unban", unban, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+KICKME_HANDLER = DisableAbleCommandHandler("kickme", kickme, filters=Filters.chat_type.groups, run_async=True)
+BANME_HANDLER = DisableAbleCommandHandler("banme", banme, filters=Filters.chat_type.groups, run_async=True)
+SBAN_HANDLER = CommandHandler("sban", sban, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
 
 dispatcher.add_handler(BAN_HANDLER)
 dispatcher.add_handler(TEMPBAN_HANDLER)

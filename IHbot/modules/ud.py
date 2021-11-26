@@ -1,12 +1,11 @@
 from requests import get
 from telegram import Update
-from telegram.ext import run_async, CallbackContext
+from telegram.ext import CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
 
 
-@run_async
 def ud(update: Update, context: CallbackContext):
     message = update.effective_message
     text = message.text[len('/ud '):]
@@ -21,6 +20,6 @@ __help__ = """
 
 __mod_name__ = "Urban dictionary"
 
-ud_handle = DisableAbleCommandHandler("ud", ud)
+ud_handle = DisableAbleCommandHandler("ud", ud, run_async=True)
 
 dispatcher.add_handler(ud_handle)

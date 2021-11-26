@@ -7,7 +7,6 @@ from telegram import TelegramError, Chat, Message
 from telegram import Update, ParseMode
 from telegram.error import BadRequest, Unauthorized
 from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackContext
-from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 import IHbot.modules.sql.users_sql as sql
@@ -51,7 +50,6 @@ def get_user_id(username):
     return None
 
 
-@run_async
 def broadcast(update: Update, context: CallbackContext):
     to_send = update.effective_message.text.split(None, 1)
     if len(to_send) >= 2:
@@ -69,7 +67,6 @@ def broadcast(update: Update, context: CallbackContext):
                                             "due to being kicked.".format(failed))
 
 
-@run_async
 def restrict_group(update: Update, context: CallbackContext) -> str:
     message = update.effective_message  # type: Optional[Message]
 
@@ -130,7 +127,6 @@ def restrict_group(update: Update, context: CallbackContext) -> str:
         message.reply_text("I'm already restricted from that chat!")
 
 
-@run_async
 def new_message(update: Update, context: CallbackContext):  # Leave group when a message is sent in restricted group
     chat = update.effective_chat  # type: Optional[Chat]
 
@@ -140,7 +136,6 @@ def new_message(update: Update, context: CallbackContext):  # Leave group when a
     context.bot.leave_chat(chat.id)
 
 
-@run_async
 def unrestrict_group(update: Update, context: CallbackContext) -> str:
     message = update.effective_message  # type: Optional[Message]
 
@@ -182,7 +177,6 @@ def unrestrict_group(update: Update, context: CallbackContext) -> str:
         message.reply_text("I'm not restricted from that chat!")
 
 
-@run_async
 def log_user(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
@@ -203,7 +197,6 @@ def log_user(update: Update, context: CallbackContext):
                         msg.forward_from.username)
 
 
-@run_async
 def chats(update: Update, context: CallbackContext):
     all_chats = sql.get_all_chats() or []
     chatfile = 'List of chats.\n'
@@ -247,14 +240,14 @@ __help__ = ""  # no help string
 
 __mod_name__ = "Users"
 
-BROADCAST_HANDLER = CommandHandler("broadcast", broadcast, filters=Filters.user(OWNER_ID))
-USER_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, log_user)
-CHATLIST_HANDLER = CommandHandler("chatlist", chats, filters=CustomFilters.sudo_filter)
+BROADCAST_HANDLER = CommandHandler("broadcast", broadcast, filters=Filters.user(OWNER_ID), run_async=True)
+USER_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, log_user, run_async=True)
+CHATLIST_HANDLER = CommandHandler("chatlist", chats, filters=CustomFilters.sudo_filter, run_async=True)
 RESTRICT_GROUP_HANDLER = CommandHandler("restrict", restrict_group, pass_args=True,
-                                        filters=CustomFilters.sudo_filter)
+                                        filters=CustomFilters.sudo_filter, run_async=True)
 UNRESTRICT_GROUP_HANDLER = CommandHandler("unrestrict", unrestrict_group, pass_args=True,
-                                          filters=CustomFilters.sudo_filter)
-NEW_MESSAGE_HANDLER = MessageHandler(CustomFilters.chat_restricted, new_message)
+                                          filters=CustomFilters.sudo_filter, run_async=True)
+NEW_MESSAGE_HANDLER = MessageHandler(CustomFilters.chat_restricted, new_message, run_async=True)
 
 dispatcher.add_handler(USER_HANDLER, USERS_GROUP)
 dispatcher.add_handler(BROADCAST_HANDLER)

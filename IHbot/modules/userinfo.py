@@ -5,7 +5,6 @@ from certifi.__main__ import args
 from telegram import Message, Update, User
 from telegram import ParseMode, MAX_MESSAGE_LENGTH
 from telegram.ext import CallbackContext
-from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown
 
 import IHbot.modules.sql.userinfo_sql as sql
@@ -14,7 +13,6 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 from IHbot.modules.helper_funcs.extraction import extract_user
 
 
-@run_async
 def about_me(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     user_id = extract_user(message, args)
@@ -36,7 +34,6 @@ def about_me(update: Update, context: CallbackContext):
         update.effective_message.reply_text("You haven't set an info message about yourself yet!")
 
 
-@run_async
 def set_about_me(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     user_id = message.from_user.id
@@ -51,7 +48,6 @@ def set_about_me(update: Update, context: CallbackContext):
                 "Your info needs to be under {} characters! You have {}.".format(MAX_MESSAGE_LENGTH // 4, len(info[1])))
 
 
-@run_async
 def about_bio(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
 
@@ -73,7 +69,6 @@ def about_bio(update: Update, context: CallbackContext):
         update.effective_message.reply_text("You haven't had a bio set about yourself yet!")
 
 
-@run_async
 def set_about_bio(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     sender = update.effective_user  # type: Optional[User]
@@ -128,11 +123,11 @@ __help__ = """
 
 __mod_name__ = "Bios and Abouts"
 
-SET_BIO_HANDLER = DisableAbleCommandHandler("setbio", set_about_bio)
-GET_BIO_HANDLER = DisableAbleCommandHandler("bio", about_bio, pass_args=True)
+SET_BIO_HANDLER = DisableAbleCommandHandler("setbio", set_about_bio, run_async=True)
+GET_BIO_HANDLER = DisableAbleCommandHandler("bio", about_bio, pass_args=True, run_async=True)
 
-SET_ABOUT_HANDLER = DisableAbleCommandHandler("setme", set_about_me)
-GET_ABOUT_HANDLER = DisableAbleCommandHandler("me", about_me, pass_args=True)
+SET_ABOUT_HANDLER = DisableAbleCommandHandler("setme", set_about_me, run_async=True)
+GET_ABOUT_HANDLER = DisableAbleCommandHandler("me", about_me, pass_args=True, run_async=True)
 
 dispatcher.add_handler(SET_BIO_HANDLER)
 dispatcher.add_handler(GET_BIO_HANDLER)

@@ -11,7 +11,7 @@ from geopy.geocoders import Nominatim
 from telegram import Location
 from telegram import Message, Chat, Update, MessageEntity
 from telegram import ParseMode
-from telegram.ext import CommandHandler, run_async, Filters, CallbackContext
+from telegram.ext import CommandHandler, Filters, CallbackContext
 from telegram.utils.helpers import escape_markdown, mention_html
 
 from IHbot import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER
@@ -161,13 +161,11 @@ GMAPS_LOC = "https://maps.googleapis.com/maps/api/geocode/json"
 GMAPS_TIME = "https://maps.googleapis.com/maps/api/timezone/json"
 
 
-@run_async
 def runs(update: Update, context: CallbackContext):
     context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     update.effective_message.reply_text(random.choice(RUN_STRINGS))
 
 
-@run_async
 def slap(update: Update, context: CallbackContext):
     context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     msg = update.effective_message  # type: Optional[Message]
@@ -206,7 +204,6 @@ def slap(update: Update, context: CallbackContext):
     reply_text(repl, parse_mode=ParseMode.MARKDOWN)
 
 
-@run_async
 def get_bot_ip(update: Update, context: CallbackContext):
     """ Sends the bot's IP address, so as to be able to ssh in if necessary.
         OWNER ONLY.
@@ -215,7 +212,6 @@ def get_bot_ip(update: Update, context: CallbackContext):
     update.message.reply_text(res.text)
 
 
-@run_async
 def get_id(update: Update, context: CallbackContext):
     context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     user_id = extract_user(update.effective_message, args)
@@ -245,7 +241,6 @@ def get_id(update: Update, context: CallbackContext):
                                                 parse_mode=ParseMode.MARKDOWN)
 
 
-@run_async
 def info(update: Update, context: CallbackContext):
     context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
     msg = update.effective_message  # type: Optional[Message]
@@ -301,7 +296,6 @@ def info(update: Update, context: CallbackContext):
     update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
 
 
-@run_async
 def get_time(update: Update, context: CallbackContext):
     if len(args) == 0:
         update.effective_message.reply_text("Write a location to check the time.")
@@ -348,7 +342,6 @@ def get_time(update: Update, context: CallbackContext):
                 update.message.reply_text("It's {} in {}".format(time_there, location))
 
 
-@run_async
 def echo(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
     message = update.effective_message
@@ -410,7 +403,6 @@ def safe_mode(update: Update, context: CallbackContext):
                            parse_mode=ParseMode.MARKDOWN)
 
 
-@run_async
 def gdpr(update: Update, context: CallbackContext):
     update.effective_message.reply_text("Deleting identifiable data...")
     for mod in GDPR:
@@ -447,7 +439,6 @@ Keep in mind that your message <b>MUST</b> contain some text other than just a b
 """.format(dispatcher.bot.first_name)
 
 
-@run_async
 def markdown_help(update: Update, context: CallbackContext):
     update.effective_message.reply_text(MARKDOWN_HELP, parse_mode=ParseMode.HTML)
     update.effective_message.reply_text("Try forwarding the following message to me, and you'll see!")
@@ -456,7 +447,6 @@ def markdown_help(update: Update, context: CallbackContext):
                                         "[button2](buttonurl://google.com:same)")
 
 
-@run_async
 def stats(update: Update, context: CallbackContext):
     update.effective_message.reply_text("Current stats:\n" + "\n".join([mod.__stats__() for mod in STATS]))
 
@@ -481,7 +471,6 @@ def gps(update: Update, context: CallbackContext):
         update.message.reply_text("I can't find that")
 
 
-@run_async
 def shrug(update: Update, context: CallbackContext):
     default_msg = "¯\_(ツ)_/¯"
     message = update.effective_message
@@ -505,25 +494,25 @@ __help__ = """
 
 __mod_name__ = "Misc"
 
-ID_HANDLER = DisableAbleCommandHandler("id", get_id, pass_args=True)
-IP_HANDLER = CommandHandler("ip", get_bot_ip, filters=Filters.chat(OWNER_ID))
+ID_HANDLER = DisableAbleCommandHandler("id", get_id, pass_args=True, run_async=True)
+IP_HANDLER = CommandHandler("ip", get_bot_ip, filters=Filters.chat(OWNER_ID), run_async=True)
 
-TIME_HANDLER = CommandHandler("time", get_time, pass_args=True)
+TIME_HANDLER = CommandHandler("time", get_time, pass_args=True, run_async=True)
 
 SAFEMODE_HANDLER = CommandHandler("safemode", safe_mode, pass_args=True)
-RUNS_HANDLER = DisableAbleCommandHandler("runs", runs)
-SLAP_HANDLER = DisableAbleCommandHandler("slap", slap, pass_args=True)
-INFO_HANDLER = DisableAbleCommandHandler("info", info, pass_args=True)
+RUNS_HANDLER = DisableAbleCommandHandler("runs", runs, run_async=True)
+SLAP_HANDLER = DisableAbleCommandHandler("slap", slap, pass_args=True, run_async=True)
+INFO_HANDLER = DisableAbleCommandHandler("info", info, pass_args=True, run_async=True)
 
 PING_HANDLER = DisableAbleCommandHandler("ping", ping)
-ECHO_HANDLER = CommandHandler("echo", echo, filters=CustomFilters.sudo_filter)
-MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, filters=Filters.chat_type.private)
+ECHO_HANDLER = CommandHandler("echo", echo, filters=CustomFilters.sudo_filter, run_async=True)
+MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, filters=Filters.chat_type.private, run_async=True)
 
-STATS_HANDLER = CommandHandler("stats", stats, filters=CustomFilters.sudo_filter)
-GDPR_HANDLER = CommandHandler("gdpr", gdpr, filters=Filters.chat_type.private)
+STATS_HANDLER = CommandHandler("stats", stats, filters=CustomFilters.sudo_filter, run_async=True)
+GDPR_HANDLER = CommandHandler("gdpr", gdpr, filters=Filters.chat_type.private, run_async=True)
 GPS_HANDLER = DisableAbleCommandHandler("gps", gps, pass_args=True)
 
-SHRUG_HANDLER = DisableAbleCommandHandler("shrug", shrug)
+SHRUG_HANDLER = DisableAbleCommandHandler("shrug", shrug, run_async=True)
 
 dispatcher.add_handler(ID_HANDLER)
 dispatcher.add_handler(PING_HANDLER)
