@@ -464,8 +464,9 @@ def process_update(self, update):
     if isinstance(update, TelegramError):
         try:
             self.dispatch_error(None, update)
-        except Exception:
+        except Exception as e:
             self.logger.exception('An uncaught error was raised while handling the error')
+            self.logger.exception(e)
         return
 
     now = datetime.datetime.utcnow()
