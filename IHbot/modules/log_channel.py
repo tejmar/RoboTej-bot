@@ -19,7 +19,9 @@ if is_module_loaded(FILENAME):
     def loggable(func):
         @wraps(func)
         def log_action(bot: Bot, update: Update, *args, **kwargs):
-            result = func(bot, update, *args, **kwargs)
+            LOGGER.warning(*args)
+            LOGGER.warning(*kwargs)
+            result = func(bot=bot, update=update, *args, **kwargs)
             chat = update.effective_chat  # type: Optional[Chat]
             message = update.effective_message  # type: Optional[Message]
             if result:
