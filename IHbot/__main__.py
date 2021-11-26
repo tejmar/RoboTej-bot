@@ -8,7 +8,7 @@ from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated, TelegramError
 from telegram.ext import CommandHandler, Filters, MessageHandler, CallbackQueryHandler, CallbackContext
 from telegram.ext.dispatcher import DispatcherHandlerStop, Dispatcher
-from telegram.utils.helpers import escape_markdown
+from telegram.utils.helpers import escape_markdown, DEFAULT_FALSE
 
 from IHbot import dispatcher, updater, TOKEN, WEBHOOK, OWNER_ID, DONATION_LINK, CERT_PATH, PORT, URL, LOGGER, \
     ALLOW_EXCL
@@ -473,6 +473,10 @@ def process_update(self, update):
     now = datetime.datetime.utcnow()
     cnt = CHATS_CNT.get(update.effective_chat.id, 0)
 
+    context = None
+    handled = False
+    sync_modes = []
+
     t = CHATS_TIME.get(update.effective_chat.id, datetime.datetime(1970, 1, 1))
     if t and now > t + datetime.timedelta(0, 1):
         CHATS_TIME[update.effective_chat.id] = now
@@ -486,31 +490,43 @@ def process_update(self, update):
     CHATS_CNT[update.effective_chat.id] = cnt
     for group in self.groups:
         try:
-            for handler in (x for x in self.handlers[group] if x.check_update(update)):
-                handler.handle_update(update, self, True)
-                break
+            for handler in self.handlers[group]:
+                check = handler.check_update(update)
+                if check is not None and check is not False:
+                    if not context and self.use_context:
+                        context = self.context_types.context.from_update(update, self)
+                        context.refresh_data()
+                    handled = True
+                    sync_modes.append(handler.run_async)
+                    handler.handle_update(update, self, check, context)
+                    break
 
         # Stop processing with any other handler.
         except DispatcherHandlerStop:
             self.logger.debug('Stopping further handlers due to DispatcherHandlerStop')
+            self.update_persistence(update=update)
             break
 
         # Dispatch any error.
-        except TelegramError as te:
-            self.logger.warning('A TelegramError was raised while processing the Update')
-
+        except Exception as exc:
             try:
-                self.dispatch_error(update, te)
+                self.dispatch_error(update, exc)
             except DispatcherHandlerStop:
                 self.logger.debug('Error handler stopped further handlers')
                 break
+            # Errors should not stop the thread.
             except Exception:
-                self.logger.exception('An uncaught error was raised while handling the error')
+                self.logger.exception('An uncaught error was raised while handling the error.')
 
-        # Errors should not stop the thread.
-        except Exception:
-            self.logger.exception('An uncaught error was raised while processing the update')
-
+    # Update persistence, if handled
+    handled_only_async = all(sync_modes)
+    if handled:
+        # Respect default settings
+        if all(mode is DEFAULT_FALSE for mode in sync_modes) and self.bot.defaults:
+            handled_only_async = self.bot.defaults.run_async
+        # If update was only handled by async handlers, we don't need to update here
+        if not handled_only_async:
+            self.update_persistence(update=update)
 
 if __name__ == '__main__':
     LOGGER.info("Successfully loaded modules: " + str(ALL_MODULES))
