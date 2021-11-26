@@ -90,7 +90,8 @@ def set_flood(bot: Bot, update: Update, args: List[str] = None) -> str:
 
         else:
             message.reply_text("Unrecognised argument - please use a number, 'off', or 'no'.")
-
+    else:
+        message.reply_text("Unrecognised argument - please use a number, 'off', or 'no'.")
     return ""
 
 
