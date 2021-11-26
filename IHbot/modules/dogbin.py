@@ -1,12 +1,7 @@
-import html
-import json
-import random
-
-from typing import Optional, List
-
 import requests
-from telegram import Message, Chat, Update, Bot, MessageEntity, ParseMode
-from telegram.ext import CommandHandler, run_async, Filters
+from certifi.__main__ import args
+from telegram import Update, ParseMode
+from telegram.ext import run_async, CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher
@@ -15,7 +10,7 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 BASE_URL = 'https://del.dog'
 
 @run_async
-def paste(bot: Bot, update: Update, args: List[str] = None):
+def paste(update: Update, context: CallbackContext):
     message = update.effective_message
 
     if message.reply_to_message:
@@ -46,7 +41,7 @@ def paste(bot: Bot, update: Update, args: List[str] = None):
     update.effective_message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
 @run_async
-def get_paste_content(bot: Bot, update: Update, args: List[str] = None):
+def get_paste_content(update: Update, context: CallbackContext):
     message = update.effective_message
 
     if args and len(args) >= 1:
@@ -79,7 +74,7 @@ def get_paste_content(bot: Bot, update: Update, args: List[str] = None):
     update.effective_message.reply_text('```' + escape_markdown(r.text) + '```', parse_mode=ParseMode.MARKDOWN)
 
 @run_async
-def get_paste_stats(bot: Bot, update: Update, args: List[str] = None):
+def get_paste_stats(update: Update, context: CallbackContext):
     message = update.effective_message
 
     if args and len(args) >= 1:

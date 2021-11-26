@@ -1,9 +1,10 @@
 import html
-from typing import Optional, List
+from typing import Optional
 
-from telegram import Message, Chat, Update, Bot, User, ParseMode
+from certifi.__main__ import args
+from telegram import Message, Chat, Update, User, ParseMode
 from telegram.error import BadRequest, Unauthorized
-from telegram.ext import CommandHandler, run_async, Filters, MessageHandler
+from telegram.ext import CommandHandler, run_async, Filters, MessageHandler, CallbackContext
 from telegram.utils.helpers import mention_html
 
 from IHbot import dispatcher, LOGGER
@@ -16,7 +17,7 @@ REPORT_GROUP = 5
 
 @run_async
 @user_admin
-def report_setting(bot: Bot, update: Update, args: List[str] = None):
+def report_setting(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
 
@@ -51,7 +52,7 @@ def report_setting(bot: Bot, update: Update, args: List[str] = None):
 @run_async
 @user_not_admin
 @loggable
-def report(bot: Bot, update: Update) -> str:
+def report(update: Update, context: CallbackContext) -> str:
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
@@ -89,7 +90,7 @@ def report(bot: Bot, update: Update) -> str:
 
             if sql.user_should_report(admin.user.id):
                 try:
-                    bot.send_message(admin.user.id, msg + link, parse_mode=ParseMode.HTML)
+                    context.bot.send_message(admin.user.id, msg + link, parse_mode=ParseMode.HTML)
 
                     if should_forward:
                         message.reply_to_message.forward(admin.user.id)

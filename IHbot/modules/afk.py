@@ -1,8 +1,8 @@
 from typing import Optional
 
-from telegram import Message, Update, Bot, User
+from telegram import Message, Update, User
 from telegram import MessageEntity
-from telegram.ext import Filters, MessageHandler, run_async
+from telegram.ext import Filters, MessageHandler, run_async, CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
@@ -14,7 +14,7 @@ AFK_REPLY_GROUP = 8
 
 
 @run_async
-def afk(bot: Bot, update: Update):
+def afk(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
     if len(args) >= 2:
         reason = args[1]
@@ -26,7 +26,7 @@ def afk(bot: Bot, update: Update):
 
 
 @run_async
-def no_longer_afk(bot: Bot, update: Update):
+def no_longer_afk(update: Update, context: CallbackContext):
     user = update.effective_user  # type: Optional[User]
 
     if not user:  # ignore channels
@@ -38,7 +38,7 @@ def no_longer_afk(bot: Bot, update: Update):
 
 
 @run_async
-def reply_afk(bot: Bot, update: Update):
+def reply_afk(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     entities = message.parse_entities([MessageEntity.TEXT_MENTION, MessageEntity.MENTION])
     if message.entities and entities:
@@ -52,18 +52,18 @@ def reply_afk(bot: Bot, update: Update):
                 if not user_id:
                     # Should never happen, since for a user to become AFK they must have spoken. Maybe changed username?
                     return
-                chat = bot.get_chat(user_id)
+                chat = context.bot.get_chat(user_id)
                 fst_name = chat.first_name
 
             else:
                 return
 
-            check_afk(bot, update, user_id, fst_name)
+            check_afk(context.bot, update, user_id, fst_name)
 
     elif message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
         fst_name = message.reply_to_message.from_user.first_name
-        check_afk(bot, update, user_id, fst_name)
+        check_afk(context.bot, update, user_id, fst_name)
 
 def check_afk(bot, update, user_id, fst_name):
     if sql.is_afk(user_id):
@@ -73,7 +73,7 @@ def check_afk(bot, update, user_id, fst_name):
                 res = "{} is HIDDEN!".format(fst_name)
             else:
                 res = "{} is HIDDEN! says its because of:\n{}".format(fst_name, reason)
-            message.reply_text(res)
+            update.message.reply_text(res)
 
 def __gdpr__(user_id):
     sql.rm_afk(user_id)

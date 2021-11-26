@@ -1,12 +1,13 @@
 import html
-from typing import Optional, List
+from typing import Optional
 
-from telegram import Message, Chat, Update, Bot, User
+from certifi.__main__ import args
+from telegram import Message, Chat, Update
+from telegram import ParseMode, User
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, Filters
+from telegram.ext import CommandHandler, Filters, CallbackContext
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, User, CallbackQuery
 
 from IHbot import dispatcher, LOGGER
 from IHbot.modules.helper_funcs.chat_status import bot_admin, user_admin, is_user_admin, can_restrict
@@ -19,7 +20,7 @@ from IHbot.modules.log_channel import loggable
 @bot_admin
 @user_admin
 @loggable
-def mute(bot: Bot, update: Update, args: List[str] = None) -> str:
+def mute(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -29,7 +30,7 @@ def mute(bot: Bot, update: Update, args: List[str] = None) -> str:
         message.reply_text("You'll need to either give me a username to mute, or reply to someone to be muted.")
         return ""
 
-    if user_id == bot.id:
+    if user_id == context.bot.id:
         message.reply_text("I'm not muting myself!")
         return ""
 
@@ -40,7 +41,7 @@ def mute(bot: Bot, update: Update, args: List[str] = None) -> str:
             message.reply_text("Afraid I can't stop an admin from talking!")
 
         elif member.can_send_messages is None or member.can_send_messages:
-            bot.restrict_chat_member(chat.id, user_id, can_send_messages=False)
+            context.bot.restrict_chat_member(chat.id, user_id, can_send_messages=False)
             keyboard = []
             reply = "{} is muted!".format(mention_html(member.user.id, member.user.first_name))
             message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
@@ -64,7 +65,7 @@ def mute(bot: Bot, update: Update, args: List[str] = None) -> str:
 @bot_admin
 @user_admin
 @loggable
-def unmute(bot: Bot, update: Update, args: List[str] = None) -> str:
+def unmute(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -81,7 +82,7 @@ def unmute(bot: Bot, update: Update, args: List[str] = None) -> str:
                 and member.can_send_other_messages and member.can_add_web_page_previews:
             message.reply_text("This user already has the right to speak.")
         else:
-            bot.restrict_chat_member(chat.id, int(user_id),
+            context.bot.restrict_chat_member(chat.id, int(user_id),
                                      can_send_messages=True,
                                      can_send_media_messages=True,
                                      can_send_other_messages=True,
@@ -108,7 +109,7 @@ def unmute(bot: Bot, update: Update, args: List[str] = None) -> str:
 @can_restrict
 @user_admin
 @loggable
-def temp_mute(bot: Bot, update: Update, args: List[str] = None) -> str:
+def temp_mute(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -132,7 +133,7 @@ def temp_mute(bot: Bot, update: Update, args: List[str] = None) -> str:
         message.reply_text("I really wish I could mute admins...")
         return ""
 
-    if user_id == bot.id:
+    if user_id == context.bot.id:
         message.reply_text("I'm not gonna MUTE myself, are you crazy?")
         return ""
 
@@ -165,7 +166,7 @@ def temp_mute(bot: Bot, update: Update, args: List[str] = None) -> str:
 
     try:
         if member.can_send_messages is None or member.can_send_messages:
-            bot.restrict_chat_member(chat.id, user_id, until_date=mutetime, can_send_messages=False)
+            context.bot.restrict_chat_member(chat.id, user_id, until_date=mutetime, can_send_messages=False)
             message.reply_text("Muted for {}!".format(time_val))
             return log
         else:
@@ -188,7 +189,7 @@ def temp_mute(bot: Bot, update: Update, args: List[str] = None) -> str:
 @bot_admin
 @user_admin
 @loggable
-def nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
+def nomedia(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -198,7 +199,7 @@ def nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
         message.reply_text("You'll need to either give me a username to restrict, or reply to someone to be restricted.")
         return ""
 
-    if user_id == bot.id:
+    if user_id == context.bot.id:
         message.reply_text("I'm not restricting myself!")
         return ""
 
@@ -209,7 +210,7 @@ def nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
             message.reply_text("Afraid I can't restrict admins!")
 
         elif member.can_send_messages is None or member.can_send_messages:
-            bot.restrict_chat_member(chat.id, user_id, can_send_messages=True,
+            context.bot.restrict_chat_member(chat.id, user_id, can_send_messages=True,
                                      can_send_media_messages=False,
                                      can_send_other_messages=False,
                                      can_add_web_page_previews=False)
@@ -235,7 +236,7 @@ def nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
 @bot_admin
 @user_admin
 @loggable
-def media(bot: Bot, update: Update, args: List[str] = None) -> str:
+def media(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -252,7 +253,7 @@ def media(bot: Bot, update: Update, args: List[str] = None) -> str:
                 and member.can_send_other_messages and member.can_add_web_page_previews:
             message.reply_text("This user already has the rights to send anything.")
         else:
-            bot.restrict_chat_member(chat.id, int(user_id),
+            context.bot.restrict_chat_member(chat.id, int(user_id),
                                      can_send_messages=True,
                                      can_send_media_messages=True,
                                      can_send_other_messages=True,
@@ -278,7 +279,7 @@ def media(bot: Bot, update: Update, args: List[str] = None) -> str:
 @can_restrict
 @user_admin
 @loggable
-def temp_nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
+def temp_nomedia(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -302,7 +303,7 @@ def temp_nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
         message.reply_text("I really wish I could restrict admins...")
         return ""
 
-    if user_id == bot.id:
+    if user_id == context.bot.id:
         message.reply_text("I'm not gonna RESTRICT myself, are you crazy?")
         return ""
 
@@ -335,7 +336,7 @@ def temp_nomedia(bot: Bot, update: Update, args: List[str] = None) -> str:
 
     try:
         if member.can_send_messages is None or member.can_send_messages:
-            bot.restrict_chat_member(chat.id, user_id, until_date=mutetime, can_send_messages=True,
+            context.bot.restrict_chat_member(chat.id, user_id, until_date=mutetime, can_send_messages=True,
                                      can_send_media_messages=False,
                                      can_send_other_messages=False,
                                      can_add_web_page_previews=False)

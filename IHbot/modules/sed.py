@@ -2,8 +2,8 @@ import re
 import sre_constants
 
 import telegram
-from telegram import Update, Bot
-from telegram.ext import run_async
+from telegram import Update
+from telegram.ext import run_async, CallbackContext
 
 from IHbot import dispatcher, LOGGER
 from IHbot.modules.disable import DisableAbleRegexHandler
@@ -50,7 +50,7 @@ def separate_sed(sed_string):
 
 
 @run_async
-def sed(bot: Bot, update: Update):
+def sed(update: Update, context: CallbackContext):
     sed_result = separate_sed(update.effective_message.text)
     if sed_result and update.effective_message.reply_to_message:
         if update.effective_message.reply_to_message.text:

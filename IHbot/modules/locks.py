@@ -1,11 +1,12 @@
 import html
-from typing import Optional, List
+from typing import Optional
 
 import telegram.ext as tg
-from telegram import Message, Chat, Update, Bot, ParseMode, User, MessageEntity
+from certifi.__main__ import args
+from telegram import Message, Chat, Update, ParseMode, User, MessageEntity
 from telegram import TelegramError
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
@@ -14,9 +15,9 @@ from IHbot import dispatcher, SUDO_USERS, LOGGER
 from IHbot.modules.disable import DisableAbleCommandHandler
 from IHbot.modules.helper_funcs.chat_status import can_delete, is_user_admin, user_not_admin, user_admin, \
     bot_can_delete, is_bot_admin
+from IHbot.modules.helper_funcs.filters import CustomFilters
 from IHbot.modules.log_channel import loggable
 from IHbot.modules.sql import users_sql
-from IHbot.modules.helper_funcs.filters import CustomFilters
 
 LOCK_TYPES = {'stickers': Filters.sticker,
               'audio': Filters.audio,
@@ -92,18 +93,18 @@ def unrestr_members(bot, chat_id, members, messages=True, media=True, other=True
 
 
 @run_async
-def locktypes(bot: Bot, update: Update):
+def locktypes(update: Update, context: CallbackContext):
     update.effective_message.reply_text("\n - ".join(["Locks: "] + list(LOCK_TYPES) + list(RESTRICTION_TYPES)))
 
 
 @user_admin
 @bot_can_delete
 @loggable
-def lock(bot: Bot, update: Update, args: List[str] = None) -> str:
+def lock(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
-    if can_delete(chat, bot.id):
+    if can_delete(chat, context.bot.id):
         if args and len(args) >= 1:
             if args[0] in LOCK_TYPES:
                 sql.update_lock(chat.id, args[0], locked=True)
@@ -119,7 +120,7 @@ def lock(bot: Bot, update: Update, args: List[str] = None) -> str:
                 sql.update_restriction(chat.id, args[0], locked=True)
                 if args[0] == "previews":
                     members = users_sql.get_chat_members(str(chat.id))
-                    restr_members(bot, chat.id, members, messages=True, media=True, other=True)
+                    restr_members(context.bot, chat.id, members, messages=True, media=True, other=True)
 
                 message.reply_text("Locked {} for all non-admins!".format(args[0]))
                 return "<b>{}:</b>" \
@@ -140,7 +141,7 @@ def lock(bot: Bot, update: Update, args: List[str] = None) -> str:
 @run_async
 @user_admin
 @loggable
-def unlock(bot: Bot, update: Update, args: List[str] = None) -> str:
+def unlock(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -185,16 +186,17 @@ def unlock(bot: Bot, update: Update, args: List[str] = None) -> str:
                 message.reply_text("What are you trying to unlock...? Try /locktypes for the list of lockables")
 
         else:
-            bot.sendMessage(chat.id, "What are you trying to unlock...?")
+            context.bot.sendMessage(chat.id, "What are you trying to unlock...?")
 
     return ""
 
 
 @run_async
 @user_not_admin
-def del_lockables(bot: Bot, update: Update):
+def del_lockables(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
+    bot = context.bot
 
     for lockable, filter in LOCK_TYPES.items():
         if filter(message) and sql.is_locked(chat.id, lockable) and can_delete(chat, bot.id):
@@ -223,11 +225,11 @@ def del_lockables(bot: Bot, update: Update):
 
 @run_async
 @user_not_admin
-def rest_handler(bot: Bot, update: Update):
+def rest_handler(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     for restriction, filter in RESTRICTION_TYPES.items():
-        if filter(msg) and sql.is_restr_locked(chat.id, restriction) and can_delete(chat, bot.id):
+        if filter(msg) and sql.is_restr_locked(chat.id, restriction) and can_delete(chat, context.bot.id):
             try:
                 msg.delete()
             except BadRequest as excp:
@@ -274,7 +276,7 @@ def build_lock_message(chat_id):
 
 @run_async
 @user_admin
-def list_locks(bot: Bot, update: Update):
+def list_locks(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
 
     res = build_lock_message(chat.id)

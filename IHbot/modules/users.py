@@ -1,19 +1,19 @@
 import html
 from io import BytesIO
 from time import sleep
-from typing import Optional, List
+from typing import Optional
 
 from telegram import TelegramError, Chat, Message
-from telegram import Update, Bot, ParseMode
-from telegram.utils.helpers import mention_html
+from telegram import Update, ParseMode
 from telegram.error import BadRequest, Unauthorized
-from telegram.ext import MessageHandler, Filters, CommandHandler
+from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackContext
 from telegram.ext.dispatcher import run_async
+from telegram.utils.helpers import mention_html
 
 import IHbot.modules.sql.users_sql as sql
-from IHbot.modules.helper_funcs.misc import send_to_list
 from IHbot import dispatcher, OWNER_ID, LOGGER, SUDO_USERS
 from IHbot.modules.helper_funcs.filters import CustomFilters
+from IHbot.modules.helper_funcs.misc import send_to_list
 
 USERS_GROUP = 4
 CHAT_BAN_GROUP = 12
@@ -52,14 +52,14 @@ def get_user_id(username):
 
 
 @run_async
-def broadcast(bot: Bot, update: Update):
+def broadcast(update: Update, context: CallbackContext):
     to_send = update.effective_message.text.split(None, 1)
     if len(to_send) >= 2:
         chats = sql.get_all_chats() or []
         failed = 0
         for chat in chats:
             try:
-                bot.sendMessage(int(chat.chat_id), to_send[1])
+                context.bot.sendMessage(int(chat.chat_id), to_send[1])
                 sleep(0.1)
             except TelegramError:
                 failed += 1
@@ -70,16 +70,16 @@ def broadcast(bot: Bot, update: Update):
 
 
 @run_async
-def restrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
+def restrict_group(update: Update, context: CallbackContext) -> str:
     message = update.effective_message  # type: Optional[Message]
 
     # Check if there is only one argument
-    if not len(args) == 1:
+    if not len(context.args) == 1:
         message.reply_text("Incorrect number of arguments. Please use `/restrict chat_id`.",
                            parse_mode=ParseMode.MARKDOWN)
         return
 
-    chat_id = args[0]
+    chat_id = context.args[0]
 
     # Check if chat_id is valid
     if not chat_id.startswith('-') or chat_id.isdigit():
@@ -100,11 +100,11 @@ def restrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
 
         sudo_users_list = "<b>My Admins:</b>"
         for user in SUDO_USERS:
-            name = mention_html(user, bot.get_chat(user).first_name)
+            name = mention_html(user, context.bot.get_chat(user).first_name)
             sudo_users_list += "\n - {}".format(name)
         
         try:
-            bot.send_message(chat_id=chat_id,
+            context.bot.send_message(chat_id=chat_id,
                              text="I have been restricted by my admins from this chat. "
                                   "Request any of my admins to add me to this chat.\n\n"
                                   "{}".format(sudo_users_list), parse_mode=ParseMode.HTML)
@@ -115,7 +115,7 @@ def restrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
             else:
                 LOGGER.exception("Error while sending message to chat.")
         
-        bot.leave_chat(chat_id)
+        context.bot.leave_chat(chat_id)
 
         sql.set_restriction(chat_id, chat_title, restricted=True)
         
@@ -123,7 +123,7 @@ def restrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
             
         # Report to sudo users
         restrictor = update.effective_user  # type: Optional[User]
-        send_to_list(bot, SUDO_USERS, "{} has restricted me from being added to the chat <b>{}</b>."
+        send_to_list(context.bot, SUDO_USERS, "{} has restricted me from being added to the chat <b>{}</b>."
                      .format(mention_html(restrictor.id, restrictor.first_name), chat_title), html=True)
                     
     else:
@@ -131,26 +131,26 @@ def restrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
                 
 
 @run_async
-def new_message(bot: Bot, update: Update):  # Leave group when a message is sent in restricted group
+def new_message(update: Update, context: CallbackContext):  # Leave group when a message is sent in restricted group
     chat = update.effective_chat  # type: Optional[Chat]
 
-    bot.send_message(chat_id=chat.id,
+    context.bot.send_message(chat_id=chat.id,
                      text="I have been restricted by my admins from this chat! "
                           "Request any of my admins to add me to this chat.")
-    bot.leave_chat(chat.id)
+    context.bot.leave_chat(chat.id)
 
 
 @run_async
-def unrestrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
+def unrestrict_group(update: Update, context: CallbackContext) -> str:
     message = update.effective_message  # type: Optional[Message]
     
     # Check if there is only one argument
-    if not len(args) == 1:
+    if not len(context.args) == 1:
         message.reply_text("Incorrect number of arguments. Please use `/unrestrict chat_id`.",
                            parse_mode=ParseMode.MARKDOWN)
         return
 
-    chat_id = args[0]
+    chat_id = context.args[0]
 
     # Check if chat_id is valid
     if not chat_id.startswith('-') or chat_id.isdigit():
@@ -175,7 +175,7 @@ def unrestrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
                 
         # Report to sudo users
         unrestrictor = update.effective_user  # type: Optional[User]
-        send_to_list(bot, SUDO_USERS, "{} has removed my restrictions on the chat <b>{}</b>."
+        send_to_list(context.bot, SUDO_USERS, "{} has removed my restrictions on the chat <b>{}</b>."
                      .format(mention_html(unrestrictor.id, unrestrictor.first_name), chat_title), html=True)
             
     else:
@@ -183,7 +183,7 @@ def unrestrict_group(bot: Bot, update: Update, args: List[str] = None) -> str:
 
 
 @run_async
-def log_user(bot: Bot, update: Update):
+def log_user(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
 
@@ -204,7 +204,7 @@ def log_user(bot: Bot, update: Update):
 
 
 @run_async
-def chats(bot: Bot, update: Update):
+def chats(update: Update, context: CallbackContext):
     all_chats = sql.get_all_chats() or []
     chatfile = 'List of chats.\n'
     for chat in all_chats:
@@ -225,7 +225,7 @@ def chats(bot: Bot, update: Update):
 
 
 def __user_info__(user_id):
-    if user_id == dispatcher.bot.id:
+    if user_id == dispatcher.context.bot.id:
         return """I've seen them in... Wow. Are they stalking me? They're in all the same places I am... oh. It's me."""
     num_chats = sql.get_user_num_chats(user_id)
     return """I've seen them in <code>{}</code> chats in total.""".format(num_chats)

@@ -1,13 +1,15 @@
 import hashlib
 import os
+
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import TelegramError
-from telegram import Update, Bot
-from telegram.ext import CommandHandler, run_async
+from telegram import Update
+from telegram.ext import run_async, CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
+
 
 @run_async
 def stickerid(update: Update):
@@ -24,49 +26,49 @@ def stickerid(update: Update):
                                             parse_mode=ParseMode.MARKDOWN)
 
 @run_async
-def getsticker(bot: Bot, update: Update):
+def getsticker(update: Update, context: CallbackContext):
     msg = update.effective_message
     chat_id = update.effective_chat.id
     if msg.reply_to_message and msg.reply_to_message.sticker:
-        bot.sendChatAction(chat_id, "typing")
+        context.bot.sendChatAction(chat_id, "typing")
         update.effective_message.reply_text("Hello " + "[{}](tg://user?id={})".format(msg.from_user.first_name,
                                             msg.from_user.id) + ", Please check the file you requested below."
                                             "\nPlease use this feature wisely!",
                                             parse_mode=ParseMode.MARKDOWN)
-        bot.sendChatAction(chat_id, "upload_document")
+        context.bot.sendChatAction(chat_id, "upload_document")
         file_id = msg.reply_to_message.sticker.file_id
-        newFile = bot.get_file(file_id)
+        newFile = context.bot.get_file(file_id)
         newFile.download('sticker.png')
-        bot.send_document(chat_id, document=open('sticker.png', 'rb'))
+        context.bot.send_document(chat_id, document=open('sticker.png', 'rb'))
         os.remove("sticker.png")
     else:
-        bot.sendChatAction(chat_id, "typing")
+        context.bot.sendChatAction(chat_id, "typing")
         update.effective_message.reply_text("Hello " + "[{}](tg://user?id={})".format(msg.from_user.first_name,
                                             msg.from_user.id) + ", Please reply to sticker message to get sticker image",
                                             parse_mode=ParseMode.MARKDOWN)
 
 @run_async
-def kang(bot: Bot, update: Update):
+def kang(update: Update, context: CallbackContext):
     msg = update.effective_message
     user = update.effective_user
     if msg.reply_to_message and msg.reply_to_message.sticker:
         file_id = msg.reply_to_message.sticker.file_id
-        kang_file = bot.get_file(file_id)
+        kang_file = context.bot.get_file(file_id)
         kang_file.download('kangsticker.png')
         hash = hashlib.sha1(bytearray(user.id)).hexdigest()
-        packname = "a" + hash[:20] + "_by_"+bot.username
+        packname = "a" + hash[:20] + "_by_"+context.bot.username
         if msg.reply_to_message.sticker.emoji:
             sticker_emoji = msg.reply_to_message.sticker.emoji
         else:
             sticker_emoji = "🤔"
         try:
-            bot.add_sticker_to_set(user_id=user.id, name=packname,
+            context.bot.add_sticker_to_set(user_id=user.id, name=packname,
                                    png_sticker=open('kangsticker.png', 'rb'), emojis=sticker_emoji)
             msg.reply_text("Sticker successfully added to [pack](t.me/addstickers/%s)" % packname,
                             parse_mode=ParseMode.MARKDOWN)
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
-                makepack_internal(msg, user, open('kangsticker.png', 'rb'), sticker_emoji, bot)
+                makepack_internal(msg, user, open('kangsticker.png', 'rb'), sticker_emoji, context.bot)
             print(e)
         os.remove("kangsticker.png")
     else:

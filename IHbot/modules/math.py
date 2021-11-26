@@ -1,88 +1,91 @@
-from typing import List
-import requests
-from telegram import Message, Update, Bot, MessageEntity
-from telegram.ext import CommandHandler, run_async
+from certifi.__main__ import args
+import math
+
+import pynewtonmath as newton
+from certifi.__main__ import args
+from telegram import Update
+from telegram.ext import run_async, CallbackContext
+
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
-import pynewtonmath as newton
-import math
+
 
 def join(args):
     x = ''.join(map(str, args))
     return x
 
 @run_async
-def simplify(bot: Bot, update: Update, args: List[str] = None):
+def simplify(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(newton.simplify('{}'.format(join(args))))
 
 @run_async
-def factor(bot: Bot, update: Update, args: List[str] = None):
+def factor(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(newton.factor('{}'.format(join(args))))
 
 @run_async
-def derive(bot: Bot, update: Update, args: List[str] = None):
+def derive(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(newton.derive('{}'.format(join(args))))
 
 @run_async
-def integrate(bot: Bot, update: Update, args: List[str] = None):
+def integrate(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(newton.integrate('{}'.format(join(args))))
 
 @run_async
-def zeroes(bot: Bot, update: Update, args: List[str] = None):
+def zeroes(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(newton.zeroes('{}'.format(join(args))))
 
 @run_async
-def tangent(bot: Bot, update: Update, args: List[str] = None):
+def tangent(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(newton.tangent('{}'.format(join(args))))
 
 @run_async
-def area(bot: Bot, update: Update, args: List[str] = None):
+def area(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(newton.area('{}'.format(join(args))))
 
 @run_async
-def cos(bot: Bot, update: Update, args):
+def cos(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(math.cos(int(args[0])))
 
 @run_async
-def sin(bot: Bot, update: Update, args):
+def sin(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(math.sin(int(args[0])))
 
 @run_async
-def tan(bot: Bot, update: Update, args):
+def tan(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(math.tan(int(args[0])))
 
 @run_async
-def arccos(bot: Bot, update: Update, args):
+def arccos(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(math.acos(int(args[0])))
 
 @run_async
-def arcsin(bot: Bot, update: Update, args):
+def arcsin(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(math.asin(int(args[0])))
 
 @run_async
-def arctan(bot: Bot, update: Update, args):
+def arctan(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(math.atan(int(args[0])))
 
 @run_async
-def abs(bot: Bot, update: Update, args):
+def abs(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(math.fabs(int(args[0])))
 
 @run_async
-def log(bot: Bot, update: Update, args):
+def log(update: Update, context: CallbackContext):
     message = update.effective_message
     message.reply_text(math.log(int(args[0])))
 

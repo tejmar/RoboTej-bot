@@ -1,10 +1,11 @@
 import html
 import re
-from typing import Optional, List
+from typing import Optional
 
-from telegram import Message, Chat, Update, Bot, ParseMode
+from certifi.__main__ import args
+from telegram import Message, Chat, Update, ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, Filters, run_async
+from telegram.ext import CommandHandler, MessageHandler, Filters, run_async, CallbackContext
 
 import IHbot.modules.sql.blacklist_sql as sql
 from IHbot import dispatcher, LOGGER
@@ -19,7 +20,7 @@ BASE_BLACKLIST_STRING = "Current <b>blacklisted</b> words:\n"
 
 
 @run_async
-def blacklist(bot: Bot, update: Update, args: List[str] = None):
+def blacklist(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
 
@@ -44,7 +45,7 @@ def blacklist(bot: Bot, update: Update, args: List[str] = None):
 
 @run_async
 @user_admin
-def add_blacklist(bot: Bot, update: Update):
+def add_blacklist(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     words = msg.text.split(None, 1)
@@ -68,7 +69,7 @@ def add_blacklist(bot: Bot, update: Update):
 
 @run_async
 @user_admin
-def unblacklist(bot: Bot, update: Update):
+def unblacklist(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     words = msg.text.split(None, 1)
@@ -109,7 +110,7 @@ def unblacklist(bot: Bot, update: Update):
 
 @run_async
 @user_not_admin
-def del_blacklist(bot: Bot, update: Update):
+def del_blacklist(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
     to_match = extract_text(message)

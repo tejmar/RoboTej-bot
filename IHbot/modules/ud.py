@@ -1,13 +1,13 @@
-from telegram import Update, Bot
-from telegram.ext import run_async
-
-from IHbot.modules.disable import DisableAbleCommandHandler
-from IHbot import dispatcher
-
 from requests import get
+from telegram import Update
+from telegram.ext import run_async, CallbackContext
+
+from IHbot import dispatcher
+from IHbot.modules.disable import DisableAbleCommandHandler
+
 
 @run_async
-def ud(bot: Bot, update: Update):
+def ud(update: Update, context: CallbackContext):
   message = update.effective_message
   text = message.text[len('/ud '):]
   results = get(f'http://api.urbandictionary.com/v0/define?term={text}').json()

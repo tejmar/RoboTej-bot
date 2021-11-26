@@ -1,10 +1,11 @@
 import html
-from typing import Optional, List
+from typing import Optional
 
-from telegram import Message, Chat, Update, Bot, User
+from certifi.__main__ import args
+from telegram import Message, Chat, Update, User
 from telegram import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, Filters
+from telegram.ext import CommandHandler, Filters, CallbackContext
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown, mention_html
 
@@ -20,7 +21,7 @@ from IHbot.modules.log_channel import loggable
 @can_promote
 @user_admin
 @loggable
-def promote(bot: Bot, update: Update, args: List[str] = None) -> str:
+def promote(update: Update, context: CallbackContext) -> str:
     chat_id = update.effective_chat.id
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
@@ -36,14 +37,14 @@ def promote(bot: Bot, update: Update, args: List[str] = None) -> str:
         message.reply_text("Am i supposed to give them a second star or something?")
         return ""
 
-    if user_id == bot.id:
+    if user_id == context.bot.id:
         message.reply_text("I can't promote myself! Get an admin to do it for me.")
         return ""
 
     # set same perms as bot - bot can't assign higher perms than itself!
-    bot_member = chat.get_member(bot.id)
+    bot_member = chat.get_member(context.bot.id)
 
-    bot.promoteChatMember(chat_id, user_id,
+    context.bot.promoteChatMember(chat_id, user_id,
                           can_change_info=bot_member.can_change_info,
                           can_post_messages=bot_member.can_post_messages,
                           can_edit_messages=bot_member.can_edit_messages,
@@ -67,7 +68,7 @@ def promote(bot: Bot, update: Update, args: List[str] = None) -> str:
 @can_promote
 @user_admin
 @loggable
-def demote(bot: Bot, update: Update, args: List[str] = None) -> str:
+def demote(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
     user = update.effective_user  # type: Optional[User]
@@ -86,12 +87,12 @@ def demote(bot: Bot, update: Update, args: List[str] = None) -> str:
         message.reply_text("Can't demote what wasn't promoted!")
         return ""
 
-    if user_id == bot.id:
+    if user_id == context.bot.id:
         message.reply_text("I can't demote myself! Get an admin to do it for me.")
         return ""
 
     try:
-        bot.promoteChatMember(int(chat.id), int(user_id),
+        context.bot.promoteChatMember(int(chat.id), int(user_id),
                               can_change_info=False,
                               can_post_messages=False,
                               can_edit_messages=False,
@@ -119,7 +120,7 @@ def demote(bot: Bot, update: Update, args: List[str] = None) -> str:
 @can_pin
 @user_admin
 @loggable
-def pin(bot: Bot, update: Update, args: List[str] = None) -> str:
+def pin(update: Update, context: CallbackContext) -> str:
     user = update.effective_user  # type: Optional[User]
     chat = update.effective_chat  # type: Optional[Chat]
 
@@ -133,7 +134,7 @@ def pin(bot: Bot, update: Update, args: List[str] = None) -> str:
 
     if prev_message and is_group:
         try:
-            bot.pinChatMessage(chat.id, prev_message.message_id, disable_notification=is_silent)
+            context.bot.pinChatMessage(chat.id, prev_message.message_id, disable_notification=is_silent)
         except BadRequest as excp:
             if excp.message == "Chat_not_modified":
                 pass
@@ -151,12 +152,12 @@ def pin(bot: Bot, update: Update, args: List[str] = None) -> str:
 @can_pin
 @user_admin
 @loggable
-def unpin(bot: Bot, update: Update) -> str:
+def unpin(update: Update, context: CallbackContext) -> str:
     chat = update.effective_chat
     user = update.effective_user  # type: Optional[User]
 
     try:
-        bot.unpinChatMessage(chat.id)
+        context.bot.unpinChatMessage(chat.id)
     except BadRequest as excp:
         if excp.message == "Chat_not_modified":
             pass
@@ -172,14 +173,14 @@ def unpin(bot: Bot, update: Update) -> str:
 @run_async
 @bot_admin
 @user_admin
-def invite(bot: Bot, update: Update):
+def invite(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     if chat.username:
         update.effective_message.reply_text(chat.username)
     elif chat.type == chat.SUPERGROUP or chat.type == chat.CHANNEL:
-        bot_member = chat.get_member(bot.id)
+        bot_member = chat.get_member(context.bot.id)
         if bot_member.can_invite_users:
-            invitelink = bot.exportChatInviteLink(chat.id)
+            invitelink = context.bot.exportChatInviteLink(chat.id)
             update.effective_message.reply_text(invitelink)
         else:
             update.effective_message.reply_text("I don't have access to the invite link, try changing my permissions!")
@@ -188,7 +189,7 @@ def invite(bot: Bot, update: Update):
 
 
 @run_async
-def adminlist(bot: Bot, update: Update):
+def adminlist(update: Update, context: CallbackContext):
     administrators = update.effective_chat.get_administrators()
     text = "Admins in *{}*:".format(update.effective_chat.title or "this chat")
     for admin in administrators:
@@ -214,7 +215,7 @@ def adminlist(bot: Bot, update: Update):
 
 def __chat_settings__(chat_id, user_id):
     return "You are *admin*: `{}`".format(
-        dispatcher.bot.get_chat_member(chat_id, user_id).status in ("administrator", "creator"))
+        dispatcher.context.bot.get_chat_member(chat_id, user_id).status in ("administrator", "creator"))
 
 
 __help__ = """

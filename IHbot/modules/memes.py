@@ -1,10 +1,10 @@
-import random, re
-from spongemock import spongemock
+import random
+import re
 
-from typing import Optional, List
-from telegram import Message, Update, Bot, User
-from telegram import MessageEntity
-from telegram.ext import Filters, MessageHandler, run_async
+from certifi.__main__ import args
+from spongemock import spongemock
+from telegram import Update
+from telegram.ext import run_async, CallbackContext
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
@@ -16,7 +16,7 @@ WIDE_MAP[0x20] = 0x3000
 
 # based on https://github.com/wrxck/mattata/blob/master/plugins/copypasta.mattata
 @run_async
-def copypasta(bot: Bot, update: Update):
+def copypasta(update: Update, context: CallbackContext):
     message = update.effective_message
     emojis = ["😂", "😂", "👌", "✌", "💞", "👍", "👌", "💯", "🎶", "👀", "😂", "👓", "👏", "👐", "🍕", "💥", "🍴", "💦", "💦", "🍑", "🍆", "😩", "😏", "👉👌", "👀", "👅", "😩", "🚰"]
     reply_text = random.choice(emojis)
@@ -39,7 +39,7 @@ def copypasta(bot: Bot, update: Update):
 
 
 @run_async
-def bmoji(bot: Bot, update: Update):
+def bmoji(update: Update, context: CallbackContext):
     message = update.effective_message
     b_char = random.choice(message.reply_to_message.text).lower() # choose a random character in the message to be substituted with 🅱️
     reply_text = message.reply_to_message.text.replace(b_char, "🅱️").replace(b_char.upper(), "🅱️")
@@ -47,7 +47,7 @@ def bmoji(bot: Bot, update: Update):
 
 
 @run_async
-def clapmoji(bot: Bot, update: Update):
+def clapmoji(update: Update, context: CallbackContext):
     message = update.effective_message
     reply_text = "👏 "
     reply_text += message.reply_to_message.text.replace(" ", " 👏 ")
@@ -56,7 +56,7 @@ def clapmoji(bot: Bot, update: Update):
 
 
 @run_async
-def owo(bot: Bot, update: Update):
+def owo(update: Update, context: CallbackContext):
     message = update.effective_message
     faces = ['(・`ω´・)',';;w;;','owo','UwU','>w<','^w^','\(^o\) (/o^)/','( ^ _ ^)∠☆','(ô_ô)','~:o',';____;', '(*^*)', '(>_', '(♥_♥)', '*(^O^)*', '((+_+))']
     reply_text = re.sub(r'[rl]', "w", message.reply_to_message.text)
@@ -75,14 +75,14 @@ def owo(bot: Bot, update: Update):
     message.reply_to_message.reply_text(reply_text)
 
 @run_async
-def stretch(bot: Bot, update: Update):
+def stretch(update: Update, context: CallbackContext):
     message = update.effective_message
     count = random.randint(3, 10)
     reply_text = re.sub(r'([aeiouAEIOUａｅｉｏｕＡＥＩＯＵ])', (r'\1' * count), message.reply_to_message.text)
     message.reply_to_message.reply_text(reply_text)
 
 @run_async
-def vapor(bot: Bot, update: Update, args: List[str] = None):
+def vapor(update: Update, context: CallbackContext):
     message = update.effective_message
 
     if not message.reply_to_message:
@@ -104,7 +104,7 @@ def vapor(bot: Bot, update: Update, args: List[str] = None):
         message.reply_to_message.reply_text(reply_text)
 
 @run_async
-def spongemocktext(bot: Bot, update: Update):
+def spongemocktext(update: Update, context: CallbackContext):
     message = update.effective_message
     if message.reply_to_message:
         data = message.reply_to_message.text
@@ -115,7 +115,7 @@ def spongemocktext(bot: Bot, update: Update):
     message.reply_text(reply_text)
 
 @run_async
-def me_too(bot: Bot, update: Update):
+def me_too(update: Update, context: CallbackContext):
     message = update.effective_message
     if random.randint(0, 100) > 60:
         reply = random.choice(["Me too thanks", "Haha yes, me too", "Same lol", "Me irl"])

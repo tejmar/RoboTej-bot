@@ -1,8 +1,9 @@
 import pyowm
 from telegram.ext import run_async
 
-from IHbot import dispatcher, updater, API_WEATHER, BAN_STICKER
+from IHbot import dispatcher, API_WEATHER, BAN_STICKER
 from IHbot.modules.disable import DisableAbleCommandHandler
+
 
 @run_async
 def weather(bot, update, args):
@@ -21,11 +22,11 @@ def weather(bot, update, args):
         observation = owm.weather_at_place(location)
         getloc = observation.get_location()
         thelocation = getloc.get_name()
-        if thelocation == None:
+        if thelocation is None:
             thelocation = "Unknown"
         theweather = observation.get_weather()
         temperature = theweather.get_temperature(unit='celsius').get('temp')
-        if temperature == None:
+        if temperature is None:
             temperature = "Unknown"
 
         # Weather symbols

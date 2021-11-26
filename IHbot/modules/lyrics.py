@@ -1,17 +1,15 @@
 from PyLyrics import *
-from telegram import Update, Bot
-from telegram.ext import run_async
-from typing import Optional, List
+from certifi.__main__ import args
+from telegram import Update
+from telegram.ext import run_async, CallbackContext
 
-from IHbot.modules.disable import DisableAbleCommandHandler
 from IHbot import dispatcher
-
-from requests import get
+from IHbot.modules.disable import DisableAbleCommandHandler
 
 LYRICSINFO = "\n[Full Lyrics](http://lyrics.wikia.com/wiki/%s:%s)"
 
 @run_async
-def lyrics(bot: Bot, update: Update, args: List[str] = None):
+def lyrics(update: Update, context: CallbackContext):
     message = update.effective_message
     text = message.text[len('/lyrics '):]
     song = " ".join(args).split("- ")

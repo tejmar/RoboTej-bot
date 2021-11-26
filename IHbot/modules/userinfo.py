@@ -1,8 +1,10 @@
 import html
-from typing import Optional, List
+from typing import Optional
 
-from telegram import Message, Update, Bot, User
+from certifi.__main__ import args
+from telegram import Message, Update, User
 from telegram import ParseMode, MAX_MESSAGE_LENGTH
+from telegram.ext import CallbackContext
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown
 
@@ -13,12 +15,12 @@ from IHbot.modules.helper_funcs.extraction import extract_user
 
 
 @run_async
-def about_me(bot: Bot, update: Update, args: List[str] = None):
+def about_me(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     user_id = extract_user(message, args)
 
     if user_id:
-        user = bot.get_chat(user_id)
+        user = context.bot.get_chat(user_id)
     else:
         user = message.from_user
 
@@ -35,7 +37,7 @@ def about_me(bot: Bot, update: Update, args: List[str] = None):
 
 
 @run_async
-def set_about_me(bot: Bot, update: Update):
+def set_about_me(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     user_id = message.from_user.id
     text = message.text
@@ -50,12 +52,12 @@ def set_about_me(bot: Bot, update: Update):
 
 
 @run_async
-def about_bio(bot: Bot, update: Update, args: List[str] = None):
+def about_bio(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
 
     user_id = extract_user(message, args)
     if user_id:
-        user = bot.get_chat(user_id)
+        user = context.bot.get_chat(user_id)
     else:
         user = message.from_user
 
@@ -72,7 +74,7 @@ def about_bio(bot: Bot, update: Update, args: List[str] = None):
 
 
 @run_async
-def set_about_bio(bot: Bot, update: Update):
+def set_about_bio(update: Update, context: CallbackContext):
     message = update.effective_message  # type: Optional[Message]
     sender = update.effective_user  # type: Optional[User]
     if message.reply_to_message:
@@ -81,7 +83,7 @@ def set_about_bio(bot: Bot, update: Update):
         if user_id == message.from_user.id:
             message.reply_text("Ha, you can't set your own bio! You're at the mercy of others here...")
             return
-        elif user_id == bot.id and sender.id not in SUDO_USERS:
+        elif user_id == context.bot.id and sender.id not in SUDO_USERS:
             message.reply_text("Erm... yeah, I only trust sudo users to set my bio.")
             return
 

@@ -1,8 +1,9 @@
-from typing import Union, List, Optional
+from typing import Union, Optional
 
+from certifi.__main__ import args
 from future.utils import string_types
-from telegram import ParseMode, Update, Bot, Chat, User
-from telegram.ext import CommandHandler, RegexHandler, Filters
+from telegram import ParseMode, Update, Chat, User
+from telegram.ext import CommandHandler, RegexHandler, Filters, CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher
@@ -66,7 +67,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @user_admin
-    def disable(bot: Bot, update: Update, args: List[str] = None):
+    def disable(update: Update, context: CallbackContext):
         chat = update.effective_chat  # type: Optional[Chat]
         if args and len(args) >= 1:
             disable_cmd = args[0]
@@ -86,7 +87,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @user_admin
-    def enable(bot: Bot, update: Update, args: List[str] = None):
+    def enable(update: Update, context: CallbackContext):
         chat = update.effective_chat  # type: Optional[Chat]
         if args and len(args) >= 1:
             enable_cmd = args[0]
@@ -105,7 +106,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @user_admin
-    def list_cmds(bot: Bot, update: Update):
+    def list_cmds(update: Update, context: CallbackContext):
         if DISABLE_CMDS + DISABLE_OTHER:
             result = ""
             for cmd in set(DISABLE_CMDS + DISABLE_OTHER):
@@ -129,7 +130,7 @@ if is_module_loaded(FILENAME):
 
 
     @run_async
-    def commands(bot: Bot, update: Update):
+    def commands(update: Update, context: CallbackContext):
         chat = update.effective_chat
         update.effective_message.reply_text(build_curr_disabled(chat.id), parse_mode=ParseMode.MARKDOWN)
 

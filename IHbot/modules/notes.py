@@ -1,11 +1,12 @@
 import re
 from io import BytesIO
-from typing import Optional, List
+from typing import Optional
 
+from certifi.__main__ import args
 from telegram import MAX_MESSAGE_LENGTH, ParseMode, InlineKeyboardMarkup
-from telegram import Message, Update, Bot
+from telegram import Message, Update
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown
 
@@ -19,14 +20,14 @@ from IHbot.modules.helper_funcs.msg_types import get_note_type
 FILE_MATCHER = re.compile(r"^###file_id(!photo)?###:(.*?)(?:\s|$)")
 
 ENUM_FUNC_MAP = {
-    sql.Types.TEXT.value: dispatcher.bot.send_message,
-    sql.Types.BUTTON_TEXT.value: dispatcher.bot.send_message,
-    sql.Types.STICKER.value: dispatcher.bot.send_sticker,
-    sql.Types.DOCUMENT.value: dispatcher.bot.send_document,
-    sql.Types.PHOTO.value: dispatcher.bot.send_photo,
-    sql.Types.AUDIO.value: dispatcher.bot.send_audio,
-    sql.Types.VOICE.value: dispatcher.bot.send_voice,
-    sql.Types.VIDEO.value: dispatcher.bot.send_video
+    sql.Types.TEXT.value: dispatcher.context.bot.send_message,
+    sql.Types.BUTTON_TEXT.value: dispatcher.context.bot.send_message,
+    sql.Types.STICKER.value: dispatcher.context.bot.send_sticker,
+    sql.Types.DOCUMENT.value: dispatcher.context.bot.send_document,
+    sql.Types.PHOTO.value: dispatcher.context.bot.send_photo,
+    sql.Types.AUDIO.value: dispatcher.context.bot.send_audio,
+    sql.Types.VOICE.value: dispatcher.context.bot.send_voice,
+    sql.Types.VIDEO.value: dispatcher.context.bot.send_video
 }
 
 
@@ -110,26 +111,26 @@ def get(bot, update, notename, show_none=True, no_format=False):
 
 
 @run_async
-def cmd_get(bot: Bot, update: Update, args: List[str] = None):
+def cmd_get(update: Update, context: CallbackContext):
     if len(args) >= 2 and args[1].lower() == "noformat":
-        get(bot, update, args[0], show_none=True, no_format=True)
+        get(context.bot, update, args[0], show_none=True, no_format=True)
     elif len(args) >= 1:
-        get(bot, update, args[0], show_none=True)
+        get(context.bot, update, args[0], show_none=True)
     else:
         update.effective_message.reply_text("Get rekt mate")
 
 
 @run_async
-def hash_get(bot: Bot, update: Update):
+def hash_get(update: Update, context: CallbackContext):
     message = update.effective_message.text
     fst_word = message.split()[0]
     no_hash = fst_word[1:]
-    get(bot, update, no_hash, show_none=False)
+    get(context.bot, update, no_hash, show_none=False)
 
 
 @run_async
 @user_admin
-def save(bot: Bot, update: Update):
+def save(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
 
@@ -149,7 +150,7 @@ def save(bot: Bot, update: Update):
 
     if msg.reply_to_message and msg.reply_to_message.from_user.is_bot:
         if text:
-            msg.reply_text("Seems like you're trying to save a message from a bot. Unfortunately, "
+            msg.reply_text("Seems like you're trying to save a message from a context.bot. Unfortunately, "
                            "bots can't forward bot messages, so I can't save the exact message. "
                            "\nI'll save all the text I can, but if you want more, you'll have to "
                            "forward the message yourself, and then save it.")
@@ -163,7 +164,7 @@ def save(bot: Bot, update: Update):
 
 @run_async
 @user_admin
-def clear(bot: Bot, update: Update, args: List[str] = None):
+def clear(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     if args and len(args) >= 1:
         notename = args[0]
@@ -175,7 +176,7 @@ def clear(bot: Bot, update: Update, args: List[str] = None):
 
 
 @run_async
-def list_notes(bot: Bot, update: Update):
+def list_notes(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     note_list = sql.get_all_chat_notes(chat_id)
 
@@ -210,9 +211,9 @@ def __import_data__(chat_id, data):
     if failures:
         with BytesIO(str.encode("\n".join(failures))) as output:
             output.name = "failed_imports.txt"
-            dispatcher.bot.send_document(chat_id, document=output, filename="failed_imports.txt",
+            dispatcher.context.bot.send_document(chat_id, document=output, filename="failed_imports.txt",
                                          caption="These files/photos failed to import due to originating "
-                                                 "from another bot. This is a telegram API restriction, and can't "
+                                                 "from another context.bot. This is a telegram API restriction, and can't "
                                                  "be avoided. Sorry for the inconvenience!")
 
 

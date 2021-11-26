@@ -1,9 +1,11 @@
-import html, time
-from typing import Optional, List
+import html
+import time
+from typing import Optional
 
-from telegram import Message, Chat, Update, Bot, User
+from certifi.__main__ import args
+from telegram import Message, Chat, Update, User
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, Filters
+from telegram.ext import CommandHandler, Filters, CallbackContext
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
@@ -15,12 +17,12 @@ from IHbot.modules.log_channel import loggable
 @run_async
 @user_admin
 @loggable
-def purge(bot: Bot, update: Update, args: List[str] = None) -> str:
+def purge(update: Update, context: CallbackContext) -> str:
     msg = update.effective_message  # type: Optional[Message]
     if msg.reply_to_message:
         user = update.effective_user  # type: Optional[User]
         chat = update.effective_chat  # type: Optional[Chat]
-        if can_delete(chat, bot.id):
+        if can_delete(chat, context.bot.id):
             message_id = msg.reply_to_message.message_id
             if args and args[0].isdigit():
                 delete_to = message_id + int(args[0])
@@ -28,10 +30,10 @@ def purge(bot: Bot, update: Update, args: List[str] = None) -> str:
                 delete_to = msg.message_id - 1
             for m_id in range(delete_to, message_id - 1, -1):  # Reverse iteration over message ids
                 try:
-                    bot.deleteMessage(chat.id, m_id)
+                    context.bot.deleteMessage(chat.id, m_id)
                 except BadRequest as err:
                     if err.message == "Message can't be deleted":
-                        bot.send_message(chat.id, "Cannot delete all messages. The messages may be too old, I might "
+                        context.bot.send_message(chat.id, "Cannot delete all messages. The messages may be too old, I might "
                                                   "not have delete rights, or this might not be a supergroup.")
 
                     elif err.message != "Message to delete not found":
@@ -41,12 +43,12 @@ def purge(bot: Bot, update: Update, args: List[str] = None) -> str:
                 msg.delete()
             except BadRequest as err:
                 if err.message == "Message can't be deleted":
-                    bot.send_message(chat.id, "Cannot delete all messages. The messages may be too old, I might "
+                    context.bot.send_message(chat.id, "Cannot delete all messages. The messages may be too old, I might "
                                               "not have delete rights, or this might not be a supergroup.")
 
                 elif err.message != "Message to delete not found":
                     LOGGER.exception("Error while purging chat messages.")
-                    del_msg = bot.send_message(chat.id, "Purge complete.")
+                    del_msg = context.bot.send_message(chat.id, "Purge complete.")
             return "<b>{}:</b>" \
                    "\n#PURGE" \
                    "\n<b>Admin:</b> {}" \
@@ -54,7 +56,7 @@ def purge(bot: Bot, update: Update, args: List[str] = None) -> str:
                                                                mention_html(user.id, user.first_name),
                                                                delete_to - message_id)
             time.sleep(2)
-            bot.delete_message(chat.id, del_msg.id)
+            context.bot.delete_message(chat.id, del_msg.id)
 
     else:
         msg.reply_text("Reply to a message to select where to start purging from.")
@@ -65,11 +67,11 @@ def purge(bot: Bot, update: Update, args: List[str] = None) -> str:
 @run_async
 @user_admin
 @loggable
-def del_message(bot: Bot, update: Update) -> str:
+def del_message(update: Update, context: CallbackContext) -> str:
     if update.effective_message.reply_to_message:
         user = update.effective_user  # type: Optional[User]
         chat = update.effective_chat  # type: Optional[Chat]
-        if can_delete(chat, bot.id):
+        if can_delete(chat, context.bot.id):
             update.effective_message.reply_to_message.delete()
             update.effective_message.delete()
             return "<b>{}:</b>" \

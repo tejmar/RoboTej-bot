@@ -2,9 +2,9 @@ import json
 from io import BytesIO
 from typing import Optional
 
-from telegram import Message, Chat, Update, Bot
+from telegram import Message, Chat, Update
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, run_async
+from telegram.ext import CommandHandler, run_async, CallbackContext
 
 from IHbot import dispatcher, LOGGER
 from IHbot.__main__ import DATA_IMPORT
@@ -13,14 +13,14 @@ from IHbot.modules.helper_funcs.chat_status import user_admin
 
 @run_async
 @user_admin
-def import_data(bot: Bot, update):
+def import_data(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     # TODO: allow uploading doc with command, not just as reply
     # only work with a doc
     if msg.reply_to_message and msg.reply_to_message.document:
         try:
-            file_info = bot.get_file(msg.reply_to_message.document.file_id)
+            file_info = context.bot.get_file(msg.reply_to_message.document.file_id)
         except BadRequest:
             msg.reply_text("Try downloading and reuploading the file as yourself before importing - this one seems "
                            "to be iffy!")
@@ -61,7 +61,7 @@ def import_data(bot: Bot, update):
 
 @run_async
 @user_admin
-def export_data(bot: Bot, update: Update):
+def export_data(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     msg.reply_text("")
 
