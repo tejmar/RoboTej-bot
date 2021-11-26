@@ -316,5 +316,5 @@ dispatcher.add_handler(UNLOCK_HANDLER)
 dispatcher.add_handler(LOCKTYPES_HANDLER)
 dispatcher.add_handler(LOCKED_HANDLER)
 
-dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, del_lockables), PERM_GROUP, run_async=True)
-dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, rest_handler), REST_GROUP, run_async=True)
+dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, del_lockables), PERM_GROUP)
+dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, rest_handler), REST_GROUP)
