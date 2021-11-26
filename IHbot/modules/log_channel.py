@@ -8,7 +8,7 @@ FILENAME = __name__.rsplit(".", 1)[-1]
 if is_module_loaded(FILENAME):
     from telegram import Bot, Update, ParseMode, Message, Chat
     from telegram.error import BadRequest, Unauthorized
-    from telegram.ext import CommandHandler, run_async
+    from telegram.ext import CommandHandler, run_async, CallbackContext
     from telegram.utils.helpers import escape_markdown
 
     from IHbot import dispatcher, LOGGER
@@ -18,10 +18,8 @@ if is_module_loaded(FILENAME):
 
     def loggable(func):
         @wraps(func)
-        def log_action(bot: Bot, update: Update, *args, **kwargs):
-            LOGGER.warning("%s", args)
-            LOGGER.warning("%s", kwargs)
-            result = func(bot=bot, update=update, *args, **kwargs)
+        def log_action(update: Update, context: CallbackContext):
+            result = func(update=update, context=context)
             chat = update.effective_chat  # type: Optional[Chat]
             message = update.effective_message  # type: Optional[Message]
             if result:
@@ -31,7 +29,7 @@ if is_module_loaded(FILENAME):
                                                                                            message.message_id)
                 log_chat = sql.get_chat_log_channel(chat.id)
                 if log_chat:
-                    send_log(bot, log_chat, chat.id, result)
+                    send_log(context.bot, log_chat, chat.id, result)
             elif result == "":
                 pass
             else:
