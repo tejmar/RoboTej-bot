@@ -119,7 +119,7 @@ SUPPORT_USERS = list(SUPPORT_USERS)
 from IHbot.modules.helper_funcs.handlers import CustomCommandHandler, CustomRegexHandler
 
 # make sure the regex handler can take extra kwargs
-# tg.RegexHandler = CustomRegexHandler
+tg.RegexHandler = CustomRegexHandler
 
 # if ALLOW_EXCL:
-#     tg.CommandHandler = CustomCommandHandler
+tg.CommandHandler = CustomCommandHandler
