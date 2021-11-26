@@ -14,7 +14,6 @@ from IHbot.modules.sql import antiflood_sql as sql
 FLOOD_GROUP = 3
 
 
-@run_async
 @loggable
 def check_flood(bot: Bot, update: Update) -> str:
     user = update.effective_user  # type: Optional[User]
@@ -52,7 +51,6 @@ def check_flood(bot: Bot, update: Update) -> str:
                "\nDon't have kick permissions, so automatically disabled antiflood.".format(chat.title)
 
 
-@run_async
 @user_admin
 @can_restrict
 @loggable
@@ -82,7 +80,6 @@ def set_flood(bot: Bot, update: Update, args: List[str] = None) -> str:
                 return ""
 
             else:
-                message.reply_text("trying to set anitflood")
                 sql.set_flood(chat.id, amount)
                 message.reply_text("Antiflood has been updated and set to {}".format(amount))
                 return "<b>{}:</b>" \
@@ -97,7 +94,6 @@ def set_flood(bot: Bot, update: Update, args: List[str] = None) -> str:
     return ""
 
 
-@run_async
 def flood(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
 
@@ -130,9 +126,9 @@ __help__ = """
 
 __mod_name__ = "AntiFlood"
 
-FLOOD_BAN_HANDLER = MessageHandler(Filters.all & ~Filters.status_update & Filters.chat_type.groups, check_flood)
-SET_FLOOD_HANDLER = CommandHandler("setflood", set_flood, pass_args=True, filters=Filters.chat_type.groups)
-FLOOD_HANDLER = CommandHandler("flood", flood, filters=Filters.chat_type.groups)
+FLOOD_BAN_HANDLER = MessageHandler(Filters.all & ~Filters.status_update & Filters.chat_type.groups, check_flood, run_async=True)
+SET_FLOOD_HANDLER = CommandHandler("setflood", set_flood, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+FLOOD_HANDLER = CommandHandler("flood", flood, filters=Filters.chat_type.groups, run_async=True)
 
 dispatcher.add_handler(FLOOD_BAN_HANDLER, FLOOD_GROUP)
 dispatcher.add_handler(SET_FLOOD_HANDLER)
