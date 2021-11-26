@@ -20,14 +20,14 @@ from IHbot.modules.helper_funcs.msg_types import get_note_type
 FILE_MATCHER = re.compile(r"^###file_id(!photo)?###:(.*?)(?:\s|$)")
 
 ENUM_FUNC_MAP = {
-    sql.Types.TEXT.value: dispatcher.context.bot.send_message,
-    sql.Types.BUTTON_TEXT.value: dispatcher.context.bot.send_message,
-    sql.Types.STICKER.value: dispatcher.context.bot.send_sticker,
-    sql.Types.DOCUMENT.value: dispatcher.context.bot.send_document,
-    sql.Types.PHOTO.value: dispatcher.context.bot.send_photo,
-    sql.Types.AUDIO.value: dispatcher.context.bot.send_audio,
-    sql.Types.VOICE.value: dispatcher.context.bot.send_voice,
-    sql.Types.VIDEO.value: dispatcher.context.bot.send_video
+    sql.Types.TEXT.value: dispatcher.bot.send_message,
+    sql.Types.BUTTON_TEXT.value: dispatcher.bot.send_message,
+    sql.Types.STICKER.value: dispatcher.bot.send_sticker,
+    sql.Types.DOCUMENT.value: dispatcher.bot.send_document,
+    sql.Types.PHOTO.value: dispatcher.bot.send_photo,
+    sql.Types.AUDIO.value: dispatcher.bot.send_audio,
+    sql.Types.VOICE.value: dispatcher.bot.send_voice,
+    sql.Types.VIDEO.value: dispatcher.bot.send_video
 }
 
 
@@ -211,7 +211,7 @@ def __import_data__(chat_id, data):
     if failures:
         with BytesIO(str.encode("\n".join(failures))) as output:
             output.name = "failed_imports.txt"
-            dispatcher.context.bot.send_document(chat_id, document=output, filename="failed_imports.txt",
+            dispatcher.bot.send_document(chat_id, document=output, filename="failed_imports.txt",
                                          caption="These files/photos failed to import due to originating "
                                                  "from another context.bot. This is a telegram API restriction, and can't "
                                                  "be avoided. Sorry for the inconvenience!")
