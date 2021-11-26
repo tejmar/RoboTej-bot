@@ -15,7 +15,7 @@ FLOOD_GROUP = 3
 
 
 @loggable
-def check_flood(bot: Bot, update: Update) -> str:
+def check_flood(update: Update, context: CallbackContext) -> str:
     user = update.effective_user  # type: Optional[User]
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
@@ -96,7 +96,7 @@ def set_flood(update: Update, context: CallbackContext) -> str:
     return ""
 
 
-def flood(bot: Bot, update: Update):
+def flood(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
 
     limit = sql.get_flood_limit(chat.id)
