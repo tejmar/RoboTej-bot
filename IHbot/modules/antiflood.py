@@ -54,7 +54,7 @@ def check_flood(bot: Bot, update: Update) -> str:
 @user_admin
 @can_restrict
 @loggable
-def set_flood(update: Update, args: List[str] = None) -> str:
+def set_flood(bot: Bot, update: Update, args: List[str] = None) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
