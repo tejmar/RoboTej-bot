@@ -3,7 +3,7 @@ import re
 import aiml
 import telegram
 from telegram import Update, Bot
-from telegram.ext import MessageHandler, Filters
+from telegram.ext import MessageHandler, Filters, run_async
 from telegram.ext.filters import MergedFilter, InvertedFilter
 
 from IHbot import dispatcher
@@ -130,7 +130,7 @@ def words_are_greeting(msg):
         "(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|(good( mate)?|fine),? n? ?(you|u|thanks|y?o?ur ?self)|what'?s? "
         "up|wh?addup|^yo[ $!.])", msg, flags=re.IGNORECASE)
 
-
+@run_async
 def converse(bot: Bot, update: Update):
     message = update.effective_message
     if (
@@ -151,6 +151,6 @@ __help__ = """
 
 __mod_name__ = "Converse"
 
-CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse, run_async=True)
+CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse)
 
 dispatcher.add_handler(CONVERSE_HANDLER)
