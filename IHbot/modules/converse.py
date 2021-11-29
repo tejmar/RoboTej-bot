@@ -2,7 +2,7 @@ import re
 
 import aiml
 import telegram
-from telegram import Update
+from telegram import Update, Bot
 from telegram.ext import MessageHandler, Filters
 from telegram.ext.filters import MergedFilter, InvertedFilter
 
@@ -127,7 +127,8 @@ print("finished learning")
 
 def words_are_greeting(msg):
     return re.match(
-        "(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|fine,? (thanks|y?o?ur ?self)|what'?s? up|wh?addup|^yo[ $!.])", msg)
+        "(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|(good( mate)?|fine),? n? ?(you|u|thanks|y?o?ur ?self)|what'?s? "
+        "up|wh?addup|^yo[ $!.])", msg, flags=re.IGNORECASE)
 
 
 def converse(bot: Bot, update: Update):
