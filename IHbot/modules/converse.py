@@ -134,10 +134,10 @@ def words_are_greeting(msg):
 def converse(bot: Bot, update: Update):
     message = update.effective_message
     if (
-            message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == context.bot.id) \
+            message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == bot.id) \
             or update.effective_chat.id == update.effective_user.id \
             or words_are_greeting(message.text):
-        context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
+        bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
         try:
             message.reply_text(
                 alice.respond(update.effective_message.text, update.effective_user.id))
