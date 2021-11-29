@@ -1,5 +1,4 @@
 import pyowm
-from pyowm import timeutils, exceptions
 from telegram import Message, Chat, Update, Bot
 from telegram.ext import run_async
 
@@ -23,11 +22,11 @@ def weather(bot, update, args):
         observation = owm.weather_at_place(location)
         getloc = observation.get_location()
         thelocation = getloc.get_name()
-        if thelocation == None:
+        if thelocation is None:
             thelocation = "Unknown"
         theweather = observation.get_weather()
         temperature = theweather.get_temperature(unit='celsius').get('temp')
-        if temperature == None:
+        if temperature is None:
             temperature = "Unknown"
 
         # Weather symbols
