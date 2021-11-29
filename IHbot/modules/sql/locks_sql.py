@@ -69,6 +69,7 @@ class Restrictions(BASE):
 Permissions.__table__.create(checkfirst=True)
 Restrictions.__table__.create(checkfirst=True)
 
+
 PERM_LOCK = threading.RLock()
 RESTR_LOCK = threading.RLock()
 

@@ -1,12 +1,12 @@
 import re
 from io import BytesIO
-from typing import Optional
+from typing import Optional, List
 
-from certifi.__main__ import args
 from telegram import MAX_MESSAGE_LENGTH, ParseMode, InlineKeyboardMarkup
-from telegram import Message, Update
+from telegram import Message, Update, Bot
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import CommandHandler, RegexHandler
+from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown
 
 import IHbot.modules.sql.notes_sql as sql
@@ -109,24 +109,27 @@ def get(bot, update, notename, show_none=True, no_format=False):
         message.reply_text("This note doesn't exist")
 
 
-def cmd_get(update: Update, context: CallbackContext):
+@run_async
+def cmd_get(bot: Bot, update: Update, args: List[str]):
     if len(args) >= 2 and args[1].lower() == "noformat":
-        get(context.bot, update, args[0], show_none=True, no_format=True)
+        get(bot, update, args[0], show_none=True, no_format=True)
     elif len(args) >= 1:
-        get(context.bot, update, args[0], show_none=True)
+        get(bot, update, args[0], show_none=True)
     else:
         update.effective_message.reply_text("Get rekt mate")
 
 
-def hash_get(update: Update, context: CallbackContext):
+@run_async
+def hash_get(bot: Bot, update: Update):
     message = update.effective_message.text
     fst_word = message.split()[0]
     no_hash = fst_word[1:]
-    get(context.bot, update, no_hash, show_none=False)
+    get(bot, update, no_hash, show_none=False)
 
 
+@run_async
 @user_admin
-def save(update: Update, context: CallbackContext):
+def save(bot: Bot, update: Update):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
 
@@ -135,10 +138,10 @@ def save(update: Update, context: CallbackContext):
     if data_type is None:
         msg.reply_text("Dude, there's no note")
         return
-
+    
     if len(text.strip()) == 0:
         text = note_name
-
+        
     sql.add_note_to_db(chat_id, note_name, text, data_type, buttons=buttons, file=content)
 
     msg.reply_text(
@@ -146,7 +149,7 @@ def save(update: Update, context: CallbackContext):
 
     if msg.reply_to_message and msg.reply_to_message.from_user.is_bot:
         if text:
-            msg.reply_text("Seems like you're trying to save a message from a context.bot. Unfortunately, "
+            msg.reply_text("Seems like you're trying to save a message from a bot. Unfortunately, "
                            "bots can't forward bot messages, so I can't save the exact message. "
                            "\nI'll save all the text I can, but if you want more, you'll have to "
                            "forward the message yourself, and then save it.")
@@ -158,10 +161,11 @@ def save(update: Update, context: CallbackContext):
         return
 
 
+@run_async
 @user_admin
-def clear(update: Update, context: CallbackContext):
+def clear(bot: Bot, update: Update, args: List[str]):
     chat_id = update.effective_chat.id
-    if args and len(args) >= 1:
+    if len(args) >= 1:
         notename = args[0]
 
         if sql.rm_note(chat_id, notename):
@@ -170,7 +174,8 @@ def clear(update: Update, context: CallbackContext):
             update.effective_message.reply_text("That's not a note in my database!")
 
 
-def list_notes(update: Update, context: CallbackContext):
+@run_async
+def list_notes(bot: Bot, update: Update):
     chat_id = update.effective_chat.id
     note_list = sql.get_all_chat_notes(chat_id)
 
@@ -207,7 +212,7 @@ def __import_data__(chat_id, data):
             output.name = "failed_imports.txt"
             dispatcher.bot.send_document(chat_id, document=output, filename="failed_imports.txt",
                                          caption="These files/photos failed to import due to originating "
-                                                 "from another context.bot. This is a telegram API restriction, and can't "
+                                                 "from another bot. This is a telegram API restriction, and can't "
                                                  "be avoided. Sorry for the inconvenience!")
 
 
@@ -242,13 +247,13 @@ A button can be added to a note by using standard markdown link syntax - the lin
 
 __mod_name__ = "Notes"
 
-GET_HANDLER = CommandHandler("get", cmd_get, pass_args=True, run_async=True)
-HASH_GET_HANDLER = MessageHandler(Filters.regex(r"^#[^\s]+"), hash_get, run_async=True)
+GET_HANDLER = CommandHandler("get", cmd_get, pass_args=True)
+HASH_GET_HANDLER = RegexHandler(r"^#[^\s]+", hash_get)
 
-SAVE_HANDLER = CommandHandler("save", save, run_async=True)
-DELETE_HANDLER = CommandHandler("clear", clear, pass_args=True, run_async=True)
+SAVE_HANDLER = CommandHandler("save", save)
+DELETE_HANDLER = CommandHandler("clear", clear, pass_args=True)
 
-LIST_HANDLER = DisableAbleCommandHandler(["notes", "saved"], list_notes, admin_ok=True, run_async=True)
+LIST_HANDLER = DisableAbleCommandHandler(["notes", "saved"], list_notes, admin_ok=True)
 
 dispatcher.add_handler(GET_HANDLER)
 dispatcher.add_handler(SAVE_HANDLER)

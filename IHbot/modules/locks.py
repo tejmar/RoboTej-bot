@@ -1,12 +1,12 @@
 import html
-from typing import Optional
+from typing import Optional, List
 
 import telegram.ext as tg
-from certifi.__main__ import args
-from telegram import Message, Chat, Update, ParseMode, User, MessageEntity
+from telegram import Message, Chat, Update, Bot, ParseMode, User, MessageEntity
 from telegram import TelegramError
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 import IHbot.modules.sql.locks_sql as sql
@@ -14,15 +14,14 @@ from IHbot import dispatcher, SUDO_USERS, LOGGER
 from IHbot.modules.disable import DisableAbleCommandHandler
 from IHbot.modules.helper_funcs.chat_status import can_delete, is_user_admin, user_not_admin, user_admin, \
     bot_can_delete, is_bot_admin
-from IHbot.modules.helper_funcs.filters import CustomFilters
 from IHbot.modules.log_channel import loggable
 from IHbot.modules.sql import users_sql
+from IHbot.modules.helper_funcs.filters import CustomFilters
 
 LOCK_TYPES = {'stickers': Filters.sticker,
               'audio': Filters.audio,
               'voice': Filters.voice,
-              'documents': Filters.document & CustomFilters.mime_type(
-                  "application/vnd.android.package-archive") & ~Filters.animation,
+              'documents': Filters.document & CustomFilters.mime_type("application/vnd.android.package-archive") & ~Filters.animation,
               'videos': Filters.video,
               'videonotes': Filters.video_note,
               'contacts': Filters.contact,
@@ -37,8 +36,7 @@ LOCK_TYPES = {'stickers': Filters.sticker,
 
 GIF = Filters.animation
 OTHER = Filters.game | Filters.sticker | GIF
-MEDIA = Filters.audio | Filters.document & CustomFilters.mime_type(
-    "application/vnd.android.package-archive") | Filters.video | Filters.video_note | Filters.voice | Filters.photo
+MEDIA = Filters.audio | Filters.document & CustomFilters.mime_type("application/vnd.android.package-archive") | Filters.video | Filters.video_note | Filters.voice | Filters.photo
 MESSAGES = Filters.text | Filters.contact | Filters.location | Filters.venue | Filters.command | MEDIA | OTHER
 PREVIEWS = Filters.entity("url")
 
@@ -93,19 +91,20 @@ def unrestr_members(bot, chat_id, members, messages=True, media=True, other=True
             pass
 
 
-def locktypes(update: Update, context: CallbackContext):
+@run_async
+def locktypes(bot: Bot, update: Update):
     update.effective_message.reply_text("\n - ".join(["Locks: "] + list(LOCK_TYPES) + list(RESTRICTION_TYPES)))
 
 
 @user_admin
 @bot_can_delete
 @loggable
-def lock(update: Update, context: CallbackContext) -> str:
+def lock(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
-    if can_delete(chat, context.bot.id):
-        if args and len(args) >= 1:
+    if can_delete(chat, bot.id):
+        if len(args) >= 1:
             if args[0] in LOCK_TYPES:
                 sql.update_lock(chat.id, args[0], locked=True)
                 message.reply_text("Locked {} messages for all non-admins!".format(args[0]))
@@ -120,7 +119,7 @@ def lock(update: Update, context: CallbackContext) -> str:
                 sql.update_restriction(chat.id, args[0], locked=True)
                 if args[0] == "previews":
                     members = users_sql.get_chat_members(str(chat.id))
-                    restr_members(context.bot, chat.id, members, messages=True, media=True, other=True)
+                    restr_members(bot, chat.id, members, messages=True, media=True, other=True)
 
                 message.reply_text("Locked {} for all non-admins!".format(args[0]))
                 return "<b>{}:</b>" \
@@ -138,14 +137,15 @@ def lock(update: Update, context: CallbackContext) -> str:
     return ""
 
 
+@run_async
 @user_admin
 @loggable
-def unlock(update: Update, context: CallbackContext) -> str:
+def unlock(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
     if is_user_admin(chat, message.from_user.id):
-        if args and len(args) >= 1:
+        if len(args) >= 1:
             if args[0] in LOCK_TYPES:
                 sql.update_lock(chat.id, args[0], locked=False)
                 message.reply_text("Unlocked {} for everyone!".format(args[0]))
@@ -185,16 +185,16 @@ def unlock(update: Update, context: CallbackContext) -> str:
                 message.reply_text("What are you trying to unlock...? Try /locktypes for the list of lockables")
 
         else:
-            context.bot.sendMessage(chat.id, "What are you trying to unlock...?")
+            bot.sendMessage(chat.id, "What are you trying to unlock...?")
 
     return ""
 
 
+@run_async
 @user_not_admin
-def del_lockables(update: Update, context: CallbackContext):
+def del_lockables(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
-    bot = context.bot
 
     for lockable, filter in LOCK_TYPES.items():
         if filter(message) and sql.is_locked(chat.id, lockable) and can_delete(chat, bot.id):
@@ -221,12 +221,13 @@ def del_lockables(update: Update, context: CallbackContext):
             break
 
 
+@run_async
 @user_not_admin
-def rest_handler(update: Update, context: CallbackContext):
+def rest_handler(bot: Bot, update: Update):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     for restriction, filter in RESTRICTION_TYPES.items():
-        if filter(update) and sql.is_restr_locked(chat.id, restriction) and can_delete(chat, context.bot.id):
+        if filter(msg) and sql.is_restr_locked(chat.id, restriction) and can_delete(chat, bot.id):
             try:
                 msg.delete()
             except BadRequest as excp:
@@ -259,8 +260,7 @@ def build_lock_message(chat_id):
                    "\n - forward = `{}`" \
                    "\n - game = `{}`" \
                    "\n - location = `{}`".format(locks.sticker, locks.audio, locks.voice, locks.document,
-                                                 locks.video, locks.videonote, locks.contact, locks.photo, locks.gif,
-                                                 locks.url,
+                                                 locks.video, locks.videonote, locks.contact, locks.photo, locks.gif, locks.url,
                                                  locks.bots, locks.forward, locks.game, locks.location)
         if restr:
             res += "\n - messages = `{}`" \
@@ -272,8 +272,9 @@ def build_lock_message(chat_id):
     return res
 
 
+@run_async
 @user_admin
-def list_locks(update: Update, context: CallbackContext):
+def list_locks(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
 
     res = build_lock_message(chat.id)
@@ -306,15 +307,15 @@ Locking bots will stop non-admins from adding bots to the chat.
 
 __mod_name__ = "Locks"
 
-LOCKTYPES_HANDLER = DisableAbleCommandHandler("locktypes", locktypes, run_async=True)
-LOCK_HANDLER = CommandHandler("lock", lock, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-UNLOCK_HANDLER = CommandHandler("unlock", unlock, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-LOCKED_HANDLER = CommandHandler("locks", list_locks, filters=Filters.chat_type.groups, run_async=True)
+LOCKTYPES_HANDLER = DisableAbleCommandHandler("locktypes", locktypes)
+LOCK_HANDLER = CommandHandler("lock", lock, pass_args=True, filters=Filters.group)
+UNLOCK_HANDLER = CommandHandler("unlock", unlock, pass_args=True, filters=Filters.group)
+LOCKED_HANDLER = CommandHandler("locks", list_locks, filters=Filters.group)
 
 dispatcher.add_handler(LOCK_HANDLER)
 dispatcher.add_handler(UNLOCK_HANDLER)
 dispatcher.add_handler(LOCKTYPES_HANDLER)
 dispatcher.add_handler(LOCKED_HANDLER)
 
-dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, del_lockables), PERM_GROUP)
-dispatcher.add_handler(MessageHandler(Filters.all & Filters.chat_type.groups, rest_handler), REST_GROUP)
+dispatcher.add_handler(MessageHandler(Filters.all & Filters.group, del_lockables), PERM_GROUP)
+dispatcher.add_handler(MessageHandler(Filters.all & Filters.group, rest_handler), REST_GROUP)

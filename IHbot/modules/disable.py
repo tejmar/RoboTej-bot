@@ -1,9 +1,8 @@
-from typing import Union, Optional
+from typing import Union, List, Optional
 
-from certifi.__main__ import args
 from future.utils import string_types
-from telegram import ParseMode, Update, Chat, User
-from telegram.ext import CommandHandler, RegexHandler, Filters, CallbackContext
+from telegram import ParseMode, Update, Bot, Chat, User
+from telegram.ext import CommandHandler, RegexHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher
@@ -15,13 +14,13 @@ FILENAME = __name__.rsplit(".", 1)[-1]
 # If module is due to be loaded, then setup all the magical handlers
 if is_module_loaded(FILENAME):
     from IHbot.modules.helper_funcs.chat_status import user_admin, is_user_admin
+    from telegram.ext.dispatcher import run_async
 
     from IHbot.modules.sql import disable_sql as sql
 
     DISABLE_CMDS = []
     DISABLE_OTHER = []
     ADMIN_CMDS = []
-
 
     class DisableAbleCommandHandler(CommandHandler):
         def __init__(self, command, callback, admin_ok=False, **kwargs):
@@ -65,10 +64,11 @@ if is_module_loaded(FILENAME):
             return super().check_update(update) and not sql.is_command_disabled(chat.id, self.friendly)
 
 
+    @run_async
     @user_admin
-    def disable(update: Update, context: CallbackContext):
+    def disable(bot: Bot, update: Update, args: List[str]):
         chat = update.effective_chat  # type: Optional[Chat]
-        if args and len(args) >= 1:
+        if len(args) >= 1:
             disable_cmd = args[0]
             if disable_cmd.startswith(CMD_STARTERS):
                 disable_cmd = disable_cmd[1:]
@@ -84,10 +84,11 @@ if is_module_loaded(FILENAME):
             update.effective_message.reply_text("What should I disable?")
 
 
+    @run_async
     @user_admin
-    def enable(update: Update, context: CallbackContext):
+    def enable(bot: Bot, update: Update, args: List[str]):
         chat = update.effective_chat  # type: Optional[Chat]
-        if args and len(args) >= 1:
+        if len(args) >= 1:
             enable_cmd = args[0]
             if enable_cmd.startswith(CMD_STARTERS):
                 enable_cmd = enable_cmd[1:]
@@ -102,8 +103,9 @@ if is_module_loaded(FILENAME):
             update.effective_message.reply_text("What should I enable?")
 
 
+    @run_async
     @user_admin
-    def list_cmds(update: Update, context: CallbackContext):
+    def list_cmds(bot: Bot, update: Update):
         if DISABLE_CMDS + DISABLE_OTHER:
             result = ""
             for cmd in set(DISABLE_CMDS + DISABLE_OTHER):
@@ -126,7 +128,8 @@ if is_module_loaded(FILENAME):
         return "The following commands are currently restricted:\n{}".format(result)
 
 
-    def commands(update: Update, context: CallbackContext):
+    @run_async
+    def commands(bot: Bot, update: Update):
         chat = update.effective_chat
         update.effective_message.reply_text(build_curr_disabled(chat.id), parse_mode=ParseMode.MARKDOWN)
 
@@ -154,10 +157,10 @@ if is_module_loaded(FILENAME):
  - /listcmds: list all possible toggleable commands
     """
 
-    DISABLE_HANDLER = CommandHandler("disable", disable, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-    ENABLE_HANDLER = CommandHandler("enable", enable, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-    COMMANDS_HANDLER = CommandHandler(["cmds", "disabled"], commands, filters=Filters.chat_type.groups, run_async=True)
-    TOGGLE_HANDLER = CommandHandler("listcmds", list_cmds, filters=Filters.chat_type.groups, run_async=True)
+    DISABLE_HANDLER = CommandHandler("disable", disable, pass_args=True, filters=Filters.group)
+    ENABLE_HANDLER = CommandHandler("enable", enable, pass_args=True, filters=Filters.group)
+    COMMANDS_HANDLER = CommandHandler(["cmds", "disabled"], commands, filters=Filters.group)
+    TOGGLE_HANDLER = CommandHandler("listcmds", list_cmds, filters=Filters.group)
 
     dispatcher.add_handler(DISABLE_HANDLER)
     dispatcher.add_handler(ENABLE_HANDLER)

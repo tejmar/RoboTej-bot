@@ -1,8 +1,8 @@
 from typing import Optional
 
-from telegram import Message, Update, User
+from telegram import Message, Update, Bot, User
 from telegram import MessageEntity
-from telegram.ext import Filters, MessageHandler, CallbackContext
+from telegram.ext import Filters, MessageHandler, run_async
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
@@ -13,7 +13,8 @@ AFK_GROUP = 7
 AFK_REPLY_GROUP = 8
 
 
-def afk(update: Update, context: CallbackContext):
+@run_async
+def afk(bot: Bot, update: Update):
     args = update.effective_message.text.split(None, 1)
     if len(args) >= 2:
         reason = args[1]
@@ -24,7 +25,8 @@ def afk(update: Update, context: CallbackContext):
     update.effective_message.reply_text("{} is now HIDING!".format(update.effective_user.first_name))
 
 
-def no_longer_afk(update: Update, context: CallbackContext):
+@run_async
+def no_longer_afk(bot: Bot, update: Update):
     user = update.effective_user  # type: Optional[User]
 
     if not user:  # ignore channels
@@ -35,7 +37,8 @@ def no_longer_afk(update: Update, context: CallbackContext):
         update.effective_message.reply_text("{} has returned!".format(update.effective_user.first_name))
 
 
-def reply_afk(update: Update, context: CallbackContext):
+@run_async
+def reply_afk(bot: Bot, update: Update):
     message = update.effective_message  # type: Optional[Message]
     entities = message.parse_entities([MessageEntity.TEXT_MENTION, MessageEntity.MENTION])
     if message.entities and entities:
@@ -49,19 +52,18 @@ def reply_afk(update: Update, context: CallbackContext):
                 if not user_id:
                     # Should never happen, since for a user to become AFK they must have spoken. Maybe changed username?
                     return
-                chat = context.bot.get_chat(user_id)
+                chat = bot.get_chat(user_id)
                 fst_name = chat.first_name
 
             else:
                 return
 
-            check_afk(context.bot, update, user_id, fst_name)
+            check_afk(bot, update, user_id, fst_name)
 
     elif message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
         fst_name = message.reply_to_message.from_user.first_name
-        check_afk(context.bot, update, user_id, fst_name)
-
+        check_afk(bot, update, user_id, fst_name)
 
 def check_afk(bot, update, user_id, fst_name):
     if sql.is_afk(user_id):
@@ -71,8 +73,7 @@ def check_afk(bot, update, user_id, fst_name):
                 res = "{} is HIDDEN!".format(fst_name)
             else:
                 res = "{} is HIDDEN! says its because of:\n{}".format(fst_name, reason)
-            update.message.reply_text(res)
-
+            message.reply_text(res)
 
 def __gdpr__(user_id):
     sql.rm_afk(user_id)
@@ -87,10 +88,10 @@ When marked as AFK, any mentions will be replied to with a message to say you're
 
 __mod_name__ = "AFK"
 
-AFK_HANDLER = DisableAbleCommandHandler("afk", afk, run_async=True)
-AFK_REGEX_HANDLER = DisableAbleRegexHandler("(?i)brb", afk, friendly="afk", run_async=True)
-NO_AFK_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, no_longer_afk, run_async=True)
-AFK_REPLY_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, reply_afk, run_async=True)
+AFK_HANDLER = DisableAbleCommandHandler("afk", afk)
+AFK_REGEX_HANDLER = DisableAbleRegexHandler("(?i)brb", afk, friendly="afk")
+NO_AFK_HANDLER = MessageHandler(Filters.all & Filters.group , no_longer_afk)
+AFK_REPLY_HANDLER = MessageHandler(Filters.all & Filters.group , reply_afk)
 
 dispatcher.add_handler(AFK_HANDLER, AFK_GROUP)
 dispatcher.add_handler(AFK_REGEX_HANDLER, AFK_GROUP)

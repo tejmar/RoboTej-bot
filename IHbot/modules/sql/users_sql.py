@@ -154,7 +154,7 @@ def set_restriction(chat_id, chat_name, restricted):
         curr = SESSION.query(Chats).get(str(chat_id))
         if not curr:
             curr = Chats(str(chat_id), chat_name)
-
+    
         curr.restricted = restricted
 
         SESSION.add(curr)

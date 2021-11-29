@@ -1,11 +1,14 @@
-from certifi.__main__ import args
-from telegram import Update
+import html
+from telegram import Message, Update, Bot, User, Chat, ParseMode
+from typing import List, Optional
 from telegram.error import BadRequest, TelegramError
-from telegram.ext import run_async, CommandHandler, CallbackContext
-
-from IHbot import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS
-from IHbot.modules.helper_funcs.extraction import extract_user
+from telegram.ext import run_async, CommandHandler, MessageHandler, Filters
+from telegram.utils.helpers import mention_html
+from IHbot import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, STRICT_GBAN
+from IHbot.modules.helper_funcs.chat_status import user_admin, is_user_admin
+from IHbot.modules.helper_funcs.extraction import extract_user, extract_user_and_text
 from IHbot.modules.helper_funcs.filters import CustomFilters
+from IHbot.modules.helper_funcs.misc import send_to_list
 from IHbot.modules.sql.users_sql import get_all_chats
 
 GKICK_ERRORS = {
@@ -24,12 +27,12 @@ GKICK_ERRORS = {
     "Reply message not found"
 }
 
-
-def gkick(update: Update, context: CallbackContext):
+@run_async
+def gkick(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
     user_id = extract_user(message, args)
     try:
-        user_chat = context.bot.get_chat(user_id)
+        user_chat = bot.get_chat(user_id)
     except BadRequest as excp:
         if excp.message in GKICK_ERRORS:
             pass
@@ -37,7 +40,7 @@ def gkick(update: Update, context: CallbackContext):
             message.reply_text("User cannot be Globally kicked because: {}".format(excp.message))
             return
     except TelegramError:
-        pass
+            pass
 
     if not user_id:
         message.reply_text("You do not seems to be referring to a user")
@@ -48,14 +51,14 @@ def gkick(update: Update, context: CallbackContext):
     if int(user_id) == OWNER_ID:
         message.reply_text("Wow! Someone's so noob that he want to gkick my owner! *Grabs Potato Chips*")
         return
-    if int(user_id) == context.bot.id:
+    if int(user_id) == bot.id:
         message.reply_text("OHH! Let's do it! Let me kick myself! And then loose all my users! -_-")
         return
     chats = get_all_chats()
     message.reply_text("Globally kicking user @{}".format(user_chat.username))
     for chat in chats:
         try:
-            context.bot.unban_chat_member(chat.chat_id, user_id)  # Unban_member = kick (and not ban)
+             bot.unban_chat_member(chat.chat_id, user_id)  # Unban_member = kick (and not ban)
         except BadRequest as excp:
             if excp.message in GKICK_ERRORS:
                 pass
@@ -65,8 +68,7 @@ def gkick(update: Update, context: CallbackContext):
         except TelegramError:
             pass
 
-
 GKICK_HANDLER = CommandHandler("gkick", gkick, pass_args=True,
-                               filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
+                              filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 
 dispatcher.add_handler(GKICK_HANDLER)
