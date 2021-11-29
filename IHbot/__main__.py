@@ -464,10 +464,10 @@ def process_update(self, update):
     # An error happened while polling
     if isinstance(update, TelegramError):
         try:
-            self.dispatch_error(None, update)
+            dispatcher.dispatch_error(None, update)
         except Exception as e:
-            self.logger.exception('An uncaught error was raised while handling the error')
-            self.logger.exception(e)
+            dispatcher.logger.exception('An uncaught error was raised while handling the error')
+            dispatcher.logger.exception(e)
         return
 
     now = datetime.datetime.utcnow()
@@ -493,30 +493,30 @@ def process_update(self, update):
             for handler in self.handlers[group]:
                 check = handler.check_update(update)
                 if check is not None and check is not False:
-                    if not context and self.use_context:
-                        context = self.context_types.context.from_update(update, self)
+                    if not context and dispatcher.use_context:
+                        context = dispatcher.context_types.context.from_update(update, dispatcher)
                         context.refresh_data()
                     handled = True
                     sync_modes.append(handler.run_async)
-                    handler.handle_update(update, self, check, context)
+                    handler.handle_update(update, dispatcher, check, context)
                     break
 
         # Stop processing with any other handler.
         except DispatcherHandlerStop:
-            self.logger.debug('Stopping further handlers due to DispatcherHandlerStop')
-            self.update_persistence(update=update)
+            dispatcher.logger.debug('Stopping further handlers due to DispatcherHandlerStop')
+            dispatcher.update_persistence(update=update)
             break
 
         # Dispatch any error.
         except Exception as exc:
             try:
-                self.dispatch_error(update, exc)
+                dispatcher.dispatch_error(update, exc)
             except DispatcherHandlerStop:
-                self.logger.debug('Error handler stopped further handlers')
+                dispatcher.logger.debug('Error handler stopped further handlers')
                 break
             # Errors should not stop the thread.
             except Exception:
-                self.logger.exception('An uncaught error was raised while handling the error.')
+                dispatcher.logger.exception('An uncaught error was raised while handling the error.')
 
     # Update persistence, if handled
     handled_only_async = all(sync_modes)
