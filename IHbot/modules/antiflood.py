@@ -1,9 +1,9 @@
 import html
-from typing import Optional
+from typing import Optional, List
 
-from telegram import Message, Chat, Update, User
+from telegram import Message, Chat, Update, Bot, User
 from telegram.error import BadRequest
-from telegram.ext import Filters, MessageHandler, CommandHandler, CallbackContext
+from telegram.ext import Filters, MessageHandler, CommandHandler, run_async
 from telegram.utils.helpers import mention_html
 
 from IHbot import dispatcher
@@ -14,8 +14,9 @@ from IHbot.modules.sql import antiflood_sql as sql
 FLOOD_GROUP = 3
 
 
+@run_async
 @loggable
-def check_flood(update: Update, context: CallbackContext) -> str:
+def check_flood(bot: Bot, update: Update) -> str:
     user = update.effective_user  # type: Optional[User]
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
@@ -51,16 +52,16 @@ def check_flood(update: Update, context: CallbackContext) -> str:
                "\nDon't have kick permissions, so automatically disabled antiflood.".format(chat.title)
 
 
+@run_async
 @user_admin
 @can_restrict
 @loggable
-def set_flood(update: Update, context: CallbackContext) -> str:
+def set_flood(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
-    args = context.args
 
-    if args and len(args) >= 1:
+    if len(args) >= 1:
         val = args[0].lower()
         if val == "off" or val == "no" or val == "0":
             sql.set_flood(chat.id, 0)
@@ -91,12 +92,12 @@ def set_flood(update: Update, context: CallbackContext) -> str:
 
         else:
             message.reply_text("Unrecognised argument - please use a number, 'off', or 'no'.")
-    else:
-        message.reply_text("Unrecognised argument - please use a number, 'off', or 'no'.")
+
     return ""
 
 
-def flood(update: Update, context: CallbackContext):
+@run_async
+def flood(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
 
     limit = sql.get_flood_limit(chat.id)
@@ -128,11 +129,9 @@ __help__ = """
 
 __mod_name__ = "AntiFlood"
 
-FLOOD_BAN_HANDLER = MessageHandler(Filters.all & ~Filters.status_update & Filters.chat_type.groups, check_flood,
-                                   run_async=True)
-SET_FLOOD_HANDLER = CommandHandler("setflood", set_flood, pass_args=True, filters=Filters.chat_type.groups,
-                                   run_async=True)
-FLOOD_HANDLER = CommandHandler("flood", flood, filters=Filters.chat_type.groups, run_async=True)
+FLOOD_BAN_HANDLER = MessageHandler(Filters.all & ~Filters.status_update & Filters.group, check_flood)
+SET_FLOOD_HANDLER = CommandHandler("setflood", set_flood, pass_args=True, filters=Filters.group)
+FLOOD_HANDLER = CommandHandler("flood", flood, filters=Filters.group)
 
 dispatcher.add_handler(FLOOD_BAN_HANDLER, FLOOD_GROUP)
 dispatcher.add_handler(SET_FLOOD_HANDLER)

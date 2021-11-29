@@ -1,14 +1,14 @@
 import datetime
 import importlib
 import re
-from typing import Optional
+from typing import Optional, List
 
-from telegram import Message, Chat, Update, User
+from telegram import Message, Chat, Update, Bot, User
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated, TelegramError
-from telegram.ext import CommandHandler, Filters, MessageHandler, CallbackQueryHandler, CallbackContext
-from telegram.ext.dispatcher import DispatcherHandlerStop, Dispatcher
-from telegram.utils.helpers import escape_markdown, DEFAULT_FALSE
+from telegram.ext import CommandHandler, Filters, MessageHandler, CallbackQueryHandler
+from telegram.ext.dispatcher import run_async, DispatcherHandlerStop, Dispatcher
+from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher, updater, TOKEN, WEBHOOK, OWNER_ID, DONATION_LINK, CERT_PATH, PORT, URL, LOGGER, \
     ALLOW_EXCL
@@ -116,18 +116,19 @@ def send_help(chat_id, text, keyboard=None):
                                 reply_markup=keyboard)
 
 
-def test(update: Update, context: CallbackContext):
+@run_async
+def test(bot: Bot, update: Update):
     # pprint(eval(str(update)))
     # update.effective_message.reply_text("Hola tester! _I_ *have* `markdown`", parse_mode=ParseMode.MARKDOWN)
     update.effective_message.reply_text("This person edited a message")
     print(update.effective_message)
 
 
-def start(update: Update, context: CallbackContext):
-    context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
-    args = context.args
+@run_async
+def start(bot: Bot, update: Update, args: List[str]):
+    bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
     if update.effective_chat.type == "private":
-        if args and len(args) >= 1:
+        if len(args) >= 1:
             if args[0].lower() == "help":
                 send_help(update.effective_chat.id, HELP_STRINGS)
 
@@ -146,7 +147,7 @@ def start(update: Update, context: CallbackContext):
         else:
             first_name = update.effective_user.first_name
             update.effective_message.reply_text(
-                PM_START_TEXT.format(escape_markdown(first_name), escape_markdown(context.bot.first_name), OWNER_ID),
+                PM_START_TEXT.format(escape_markdown(first_name), escape_markdown(bot.first_name), OWNER_ID),
                 parse_mode=ParseMode.MARKDOWN)
     else:
         update.effective_message.reply_text("Existence Alert !! ")
@@ -181,7 +182,8 @@ def error_callback(bot, update, error):
         # handle all other telegram related errors
 
 
-def help_button(update: Update, context: CallbackContext):
+@run_async
+def help_button(bot: Bot, update: Update):
     query = update.callback_query
     mod_match = re.match(r"help_module\((.+?)\)", query.data)
     prev_match = re.match(r"help_prev\((.+?)\)", query.data)
@@ -217,7 +219,7 @@ def help_button(update: Update, context: CallbackContext):
                                      reply_markup=InlineKeyboardMarkup(paginate_modules(0, HELPABLE, "help")))
 
         # ensure no spinny white circle
-        context.bot.answer_callback_query(query.id)
+        bot.answer_callback_query(query.id)
         query.message.delete()
     except BadRequest as excp:
         if excp.message == "Message is not modified":
@@ -230,7 +232,8 @@ def help_button(update: Update, context: CallbackContext):
             LOGGER.exception("Exception in help buttons. %s", str(query.data))
 
 
-def get_help(update: Update, context: CallbackContext):
+@run_async
+def get_help(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     args = update.effective_message.text.split(None, 1)
 
@@ -241,7 +244,7 @@ def get_help(update: Update, context: CallbackContext):
                                             reply_markup=InlineKeyboardMarkup(
                                                 [[InlineKeyboardButton(text="Help",
                                                                        url="t.me/{}?start=help".format(
-                                                                           context.bot.username))]]))
+                                                                           bot.username))]]))
         return
 
     elif len(args) >= 2 and any(args[1].lower() == x for x in HELPABLE):
@@ -280,7 +283,8 @@ def send_settings(chat_id, user_id, user=False):
                                         parse_mode=ParseMode.MARKDOWN)
 
 
-def settings_button(update: Update, context: CallbackContext):
+@run_async
+def settings_button(bot: Bot, update: Update):
     query = update.callback_query
     user = update.effective_user
     mod_match = re.match(r"stngs_module\((.+?),(.+?)\)", query.data)
@@ -291,7 +295,7 @@ def settings_button(update: Update, context: CallbackContext):
         if mod_match:
             chat_id = mod_match.group(1)
             module = mod_match.group(2)
-            chat = context.bot.get_chat(chat_id)
+            chat = bot.get_chat(chat_id)
             text = "*{}* has the following settings for the *{}* module:\n\n".format(escape_markdown(chat.title),
                                                                                      CHAT_SETTINGS[
                                                                                          module].__mod_name__) + \
@@ -305,7 +309,7 @@ def settings_button(update: Update, context: CallbackContext):
         elif prev_match:
             chat_id = prev_match.group(1)
             curr_page = int(prev_match.group(2))
-            chat = context.bot.get_chat(chat_id)
+            chat = bot.get_chat(chat_id)
             query.message.reply_text("Hi there! There are quite a few settings for {} - go ahead and pick what "
                                      "you're interested in.".format(chat.title),
                                      reply_markup=InlineKeyboardMarkup(
@@ -315,7 +319,7 @@ def settings_button(update: Update, context: CallbackContext):
         elif next_match:
             chat_id = next_match.group(1)
             next_page = int(next_match.group(2))
-            chat = context.bot.get_chat(chat_id)
+            chat = bot.get_chat(chat_id)
             query.message.reply_text("Hi there! There are quite a few settings for {} - go ahead and pick what "
                                      "you're interested in.".format(chat.title),
                                      reply_markup=InlineKeyboardMarkup(
@@ -324,7 +328,7 @@ def settings_button(update: Update, context: CallbackContext):
 
         elif back_match:
             chat_id = back_match.group(1)
-            chat = context.bot.get_chat(chat_id)
+            chat = bot.get_chat(chat_id)
             query.message.reply_text(text="Hi there! There are quite a few settings for {} - go ahead and pick what "
                                           "you're interested in.".format(escape_markdown(chat.title)),
                                      parse_mode=ParseMode.MARKDOWN,
@@ -332,7 +336,7 @@ def settings_button(update: Update, context: CallbackContext):
                                                                                         chat=chat_id)))
 
         # ensure no spinny white circle
-        context.bot.answer_callback_query(query.id)
+        bot.answer_callback_query(query.id)
         query.message.delete()
     except BadRequest as excp:
         if excp.message == "Message is not modified":
@@ -345,7 +349,8 @@ def settings_button(update: Update, context: CallbackContext):
             LOGGER.exception("Exception in settings buttons. %s", str(query.data))
 
 
-def get_settings(update: Update, context: CallbackContext):
+@run_async
+def get_settings(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
@@ -359,7 +364,7 @@ def get_settings(update: Update, context: CallbackContext):
                            reply_markup=InlineKeyboardMarkup(
                                [[InlineKeyboardButton(text="Settings",
                                                       url="t.me/{}?start=stngs_{}".format(
-                                                          context.bot.username, chat.id))]]))
+                                                          bot.username, chat.id))]]))
         else:
             text = "Click here to check your settings."
 
@@ -367,7 +372,8 @@ def get_settings(update: Update, context: CallbackContext):
         send_settings(chat.id, user.id, True)
 
 
-def donate(update: Update, context: CallbackContext):
+@run_async
+def donate(bot: Bot, update: Update):
     user = update.effective_message.from_user
     chat = update.effective_chat  # type: Optional[Chat]
 
@@ -381,14 +387,14 @@ def donate(update: Update, context: CallbackContext):
 
     else:
         try:
-            context.bot.send_message(user.id, DONATE_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+            bot.send_message(user.id, DONATE_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
             update.effective_message.reply_text("I've PM'ed you about donating to my creator!")
         except Unauthorized:
             update.effective_message.reply_text("Contact me in PM first to get donation information.")
 
 
-def migrate_chats(update: Update, context: CallbackContext):
+def migrate_chats(bot: Bot, update: Update):
     msg = update.effective_message  # type: Optional[Message]
     if msg.migrate_to_chat_id:
         old_chat = update.effective_chat.id
@@ -408,16 +414,16 @@ def migrate_chats(update: Update, context: CallbackContext):
 
 
 def main():
-    test_handler = CommandHandler("test", test, run_async=True)
-    start_handler = CommandHandler("start", start, pass_args=True, run_async=True)
+    test_handler = CommandHandler("test", test)
+    start_handler = CommandHandler("start", start, pass_args=True)
 
-    help_handler = CommandHandler("help", get_help, run_async=True)
-    help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_", run_async=True)
+    help_handler = CommandHandler("help", get_help)
+    help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_")
 
-    settings_handler = CommandHandler("settings", get_settings, run_async=True)
-    settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_", run_async=True)
+    settings_handler = CommandHandler("settings", get_settings)
+    settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_")
 
-    donate_handler = CommandHandler("donate", donate, run_async=True)
+    donate_handler = CommandHandler("donate", donate)
     migrate_handler = MessageHandler(Filters.status_update.migrate, migrate_chats)
 
     # dispatcher.add_handler(test_handler)
@@ -436,18 +442,15 @@ def main():
 
     if WEBHOOK:
         LOGGER.info("Using webhooks.")
+        updater.start_webhook(listen="0.0.0.0",
+                              port=PORT,
+                              url_path=TOKEN)
 
         if CERT_PATH:
-            updater.start_webhook(listen="0.0.0.0",
-                                  port=PORT,
-                                  url_path=TOKEN,
-                                  webhook_url=URL + TOKEN,
-                                  certificate=open(CERT_PATH, 'rb'))
+            updater.bot.set_webhook(url=URL + TOKEN,
+                                    certificate=open(CERT_PATH, 'rb'))
         else:
-            updater.start_webhook(listen="0.0.0.0",
-                                  port=PORT,
-                                  url_path=TOKEN,
-                                  webhook_url=URL + TOKEN)
+            updater.bot.set_webhook(url=URL + TOKEN)
 
     else:
         LOGGER.info("Using long polling.")
@@ -465,17 +468,12 @@ def process_update(self, update):
     if isinstance(update, TelegramError):
         try:
             self.dispatch_error(None, update)
-        except Exception as e:
+        except Exception:
             self.logger.exception('An uncaught error was raised while handling the error')
-            self.logger.exception(e)
         return
 
     now = datetime.datetime.utcnow()
     cnt = CHATS_CNT.get(update.effective_chat.id, 0)
-
-    context = None
-    handled = False
-    sync_modes = []
 
     t = CHATS_TIME.get(update.effective_chat.id, datetime.datetime(1970, 1, 1))
     if t and now > t + datetime.timedelta(0, 1):
@@ -490,43 +488,31 @@ def process_update(self, update):
     CHATS_CNT[update.effective_chat.id] = cnt
     for group in self.groups:
         try:
-            for handler in self.handlers[group]:
-                check = handler.check_update(update)
-                if check is not None and check is not False:
-                    if not context and self.use_context:
-                        context = self.context_types.context.from_update(update, self)
-                        context.refresh_data()
-                    handled = True
-                    sync_modes.append(handler.run_async)
-                    handler.handle_update(update, self, check, context)
-                    break
+            for handler in (x for x in self.handlers[group] if x.check_update(update)):
+                handler.handle_update(update, self)
+                break
 
         # Stop processing with any other handler.
         except DispatcherHandlerStop:
             self.logger.debug('Stopping further handlers due to DispatcherHandlerStop')
-            self.update_persistence(update=update)
             break
 
         # Dispatch any error.
-        except Exception as exc:
+        except TelegramError as te:
+            self.logger.warning('A TelegramError was raised while processing the Update')
+
             try:
-                self.dispatch_error(update, exc)
+                self.dispatch_error(update, te)
             except DispatcherHandlerStop:
                 self.logger.debug('Error handler stopped further handlers')
                 break
-            # Errors should not stop the thread.
             except Exception:
-                self.logger.exception('An uncaught error was raised while handling the error.')
+                self.logger.exception('An uncaught error was raised while handling the error')
 
-    # Update persistence, if handled
-    handled_only_async = all(sync_modes)
-    if handled:
-        # Respect default settings
-        if all(mode is DEFAULT_FALSE for mode in sync_modes) and self.bot.defaults:
-            handled_only_async = self.bot.defaults.run_async
-        # If update was only handled by async handlers, we don't need to update here
-        if not handled_only_async:
-            self.update_persistence(update=update)
+        # Errors should not stop the thread.
+        except Exception:
+            self.logger.exception('An uncaught error was raised while processing the update')
+
 
 if __name__ == '__main__':
     LOGGER.info("Successfully loaded modules: " + str(ALL_MODULES))

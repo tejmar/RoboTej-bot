@@ -2,8 +2,8 @@ import re
 
 import aiml
 import telegram
-from telegram import Update
-from telegram.ext import MessageHandler, Filters, CallbackContext
+from telegram import Update, Bot
+from telegram.ext import MessageHandler, Filters, run_async
 from telegram.ext.filters import MergedFilter, InvertedFilter
 
 from IHbot import dispatcher
@@ -127,16 +127,17 @@ print("finished learning")
 
 def words_are_greeting(msg):
     return re.match(
-        "(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|fine,? (thanks|y?o?ur ?self)|what'?s? up|wh?addup|^yo[ $!.])", msg)
+        "(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|(good( mate)?|fine),? n? ?(you|u|thanks|y?o?ur ?self)|what'?s? "
+        "up|wh?addup|^yo[ $!.])", msg, flags=re.IGNORECASE)
 
-
-def converse(update: Update, context: CallbackContext):
+@run_async
+def converse(bot: Bot, update: Update):
     message = update.effective_message
     if (
-            message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == context.bot.id) \
+            message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == bot.id) \
             or update.effective_chat.id == update.effective_user.id \
             or words_are_greeting(message.text):
-        context.bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
+        bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
         try:
             message.reply_text(
                 alice.respond(update.effective_message.text, update.effective_user.id))
@@ -150,6 +151,6 @@ __help__ = """
 
 __mod_name__ = "Converse"
 
-CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse, run_async=True)
+CONVERSE_HANDLER = MessageHandler(MergedFilter(InvertedFilter(Filters.command), Filters.text), converse)
 
 dispatcher.add_handler(CONVERSE_HANDLER)

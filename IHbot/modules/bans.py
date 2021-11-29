@@ -1,26 +1,26 @@
 import html
-from typing import Optional
+from typing import Optional, List
 
-from certifi.__main__ import args
-from telegram import Message, Chat, Update, User, ParseMode
+from telegram import Message, Chat, Update, Bot, User
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, Filters, CallbackContext
+from telegram.ext import run_async, CommandHandler, Filters
 from telegram.utils.helpers import mention_html
 
 from IHbot import dispatcher, BAN_STICKER, LOGGER, OWNER_ID
 from IHbot.modules.disable import DisableAbleCommandHandler
 from IHbot.modules.helper_funcs.chat_status import bot_admin, user_admin, is_user_ban_protected, can_restrict, \
-    is_user_admin, is_user_in_chat
+    is_user_admin, is_user_in_chat, is_bot_admin
 from IHbot.modules.helper_funcs.extraction import extract_user_and_text
 from IHbot.modules.helper_funcs.string_handling import extract_time
 from IHbot.modules.log_channel import loggable
+from IHbot.modules.helper_funcs.filters import CustomFilters
 
-
+@run_async
 @bot_admin
 @can_restrict
 @user_admin
 @loggable
-def ban(update: Update, context: CallbackContext) -> str:
+def ban(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -44,7 +44,7 @@ def ban(update: Update, context: CallbackContext) -> str:
         message.reply_text("I really wish I could ban admins...")
         return ""
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("I'm not gonna BAN myself, are you high?")
         return ""
 
@@ -60,7 +60,7 @@ def ban(update: Update, context: CallbackContext) -> str:
 
     try:
         chat.kick_member(user_id)
-        context.bot.send_sticker(chat.id, BAN_STICKER)
+        bot.send_sticker(chat.id, BAN_STICKER)
         message.reply_text("Banned!")
         return log
 
@@ -78,11 +78,12 @@ def ban(update: Update, context: CallbackContext) -> str:
     return ""
 
 
+@run_async
 @bot_admin
 @can_restrict
 @user_admin
 @loggable
-def temp_ban(update: Update, context: CallbackContext) -> str:
+def temp_ban(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -106,7 +107,7 @@ def temp_ban(update: Update, context: CallbackContext) -> str:
         message.reply_text("I really wish I could ban admins...")
         return ""
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("I'm not gonna BAN myself, are you high?")
         return ""
 
@@ -142,9 +143,8 @@ def temp_ban(update: Update, context: CallbackContext) -> str:
     try:
         chat.kick_member(user_id, until_date=bantime)
         keyboard = []
-        context.bot.send_sticker(update.effective_chat.id, BAN_STICKER)
-        reply = "{} has been temporarily banned for {}!".format(mention_html(member.user.id, member.user.first_name),
-                                                                time_val)
+        bot.send_sticker(update.effective_chat.id, BAN_STICKER)
+        reply = "{} has been temporarily banned for {}!".format(mention_html(member.user.id, member.user.first_name),time_val)
         message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
         return log
 
@@ -162,11 +162,12 @@ def temp_ban(update: Update, context: CallbackContext) -> str:
     return ""
 
 
+@run_async
 @bot_admin
 @can_restrict
 @user_admin
 @loggable
-def kick(update: Update, context: CallbackContext) -> str:
+def kick(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -189,13 +190,13 @@ def kick(update: Update, context: CallbackContext) -> str:
         message.reply_text("I really wish I could kick admins...")
         return ""
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("Yeahhh I'm not gonna do that")
         return ""
 
     res = chat.unban_member(user_id)  # unban on current user = kick
     if res:
-        context.bot.send_sticker(chat.id, BAN_STICKER)
+        bot.send_sticker(chat.id, BAN_STICKER)
         keyboard = []
         reply = "{} has been kicked!".format(mention_html(member.user.id, member.user.first_name))
         message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
@@ -218,16 +219,17 @@ def kick(update: Update, context: CallbackContext) -> str:
     return ""
 
 
+@run_async
 @bot_admin
 @can_restrict
-def kickme(update: Update, context: CallbackContext):
+def kickme(bot: Bot, update: Update):
     user_id = update.effective_message.from_user.id
     if user_id == OWNER_ID:
         update.effective_message.reply_text("Oof, I can't kick my master.")
-        return
+        return 
     elif is_user_admin(update.effective_chat, user_id):
-        update.effective_message.reply_text("I wish I could... but you're an admin.")
-        return
+          update.effective_message.reply_text("I wish I could... but you're an admin.")
+          return
 
     res = update.effective_chat.unban_member(user_id)  # unban on current user = kick
     if res:
@@ -235,11 +237,11 @@ def kickme(update: Update, context: CallbackContext):
     else:
         update.effective_message.reply_text("Huh? I can't :/")
 
-
+@run_async
 @bot_admin
 @can_restrict
 @loggable
-def banme(update: Update, context: CallbackContext):
+def banme(bot: Bot, update: Update):
     user_id = update.effective_message.from_user.id
     chat = update.effective_chat
     user = update.effective_user
@@ -263,12 +265,12 @@ def banme(update: Update, context: CallbackContext):
     else:
         update.effective_message.reply_text("Huh? I can't :/")
 
-
+@run_async
 @bot_admin
 @can_restrict
 @user_admin
 @loggable
-def unban(update: Update, context: CallbackContext) -> str:
+def unban(bot: Bot, update: Update, args: List[str]) -> str:
     message = update.effective_message  # type: Optional[Message]
     user = update.effective_user  # type: Optional[User]
     chat = update.effective_chat  # type: Optional[Chat]
@@ -287,7 +289,7 @@ def unban(update: Update, context: CallbackContext) -> str:
         else:
             raise
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("How would I unban myself if I wasn't here...?")
         return ""
 
@@ -310,16 +312,16 @@ def unban(update: Update, context: CallbackContext) -> str:
 
     return log
 
-
+@run_async
 @bot_admin
 @can_restrict
 @user_admin
 @loggable
-def sban(update: Update, context: CallbackContext) -> str:
+def sban(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
-
+    
     update.effective_message.delete()
 
     user_id, reason = extract_user_and_text(message, args)
@@ -338,14 +340,14 @@ def sban(update: Update, context: CallbackContext) -> str:
     if is_user_ban_protected(chat, user_id, member):
         return ""
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         return ""
 
     log = "<b>{}:</b>" \
           "\n# SILENTBAN" \
           "\n<b>• Admin:</b> {}" \
           "\n<b>• User:</b> {}" \
-          "\n<b>• ID:</b> <code>{}</code>".format(html.escape(chat.title), mention_html(user.id, user.first_name),
+          "\n<b>• ID:</b> <code>{}</code>".format(html.escape(chat.title), mention_html(user.id, user.first_name), 
                                                   mention_html(member.user.id, member.user.first_name), user_id)
     if reason:
         log += "\n<b>• Reason:</b> {}".format(reason)
@@ -359,10 +361,8 @@ def sban(update: Update, context: CallbackContext) -> str:
             return log
         else:
             LOGGER.warning(update)
-            LOGGER.exception("ERROR banning user %s in chat %s (%s) due to %s", user_id, chat.title, chat.id,
-                             excp.message)
+            LOGGER.exception("ERROR banning user %s in chat %s (%s) due to %s", user_id, chat.title, chat.id, excp.message)       
     return ""
-
 
 __help__ = """
  - /kickme: kicks the user who issued the command
@@ -377,13 +377,13 @@ __help__ = """
 
 __mod_name__ = "Bans"
 
-BAN_HANDLER = CommandHandler("ban", ban, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-TEMPBAN_HANDLER = CommandHandler(["tban", "tempban"], temp_ban, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-KICK_HANDLER = CommandHandler("kick", kick, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-UNBAN_HANDLER = CommandHandler("unban", unban, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
-KICKME_HANDLER = DisableAbleCommandHandler("kickme", kickme, filters=Filters.chat_type.groups, run_async=True)
-BANME_HANDLER = DisableAbleCommandHandler("banme", banme, filters=Filters.chat_type.groups, run_async=True)
-SBAN_HANDLER = CommandHandler("sban", sban, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+BAN_HANDLER = CommandHandler("ban", ban, pass_args=True, filters=Filters.group)
+TEMPBAN_HANDLER = CommandHandler(["tban", "tempban"], temp_ban, pass_args=True, filters=Filters.group)
+KICK_HANDLER = CommandHandler("kick", kick, pass_args=True, filters=Filters.group)
+UNBAN_HANDLER = CommandHandler("unban", unban, pass_args=True, filters=Filters.group)
+KICKME_HANDLER = DisableAbleCommandHandler("kickme", kickme, filters=Filters.group)
+BANME_HANDLER = DisableAbleCommandHandler("banme", banme, filters=Filters.group)
+SBAN_HANDLER = CommandHandler("sban", sban, pass_args=True, filters=Filters.group)
 
 dispatcher.add_handler(BAN_HANDLER)
 dispatcher.add_handler(TEMPBAN_HANDLER)

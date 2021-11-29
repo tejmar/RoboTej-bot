@@ -1,7 +1,12 @@
+import html
+import json
+import random
+
+from typing import Optional, List
+
 import requests
-from certifi.__main__ import args
-from telegram import Update, ParseMode
-from telegram.ext import CallbackContext
+from telegram import Message, Chat, Update, Bot, MessageEntity, ParseMode
+from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown
 
 from IHbot import dispatcher
@@ -9,8 +14,8 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 
 BASE_URL = 'https://del.dog'
 
-
-def paste(update: Update, context: CallbackContext):
+@run_async
+def paste(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
 
     if message.reply_to_message:
@@ -40,11 +45,11 @@ def paste(update: Update, context: CallbackContext):
         reply = f'{BASE_URL}/{key}'
     update.effective_message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
-
-def get_paste_content(update: Update, context: CallbackContext):
+@run_async
+def get_paste_content(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
 
-    if args and len(args) >= 1:
+    if len(args) >= 1:
         key = args[0]
     else:
         message.reply_text("Please supply a paste key!")
@@ -73,11 +78,11 @@ def get_paste_content(update: Update, context: CallbackContext):
 
     update.effective_message.reply_text('```' + escape_markdown(r.text) + '```', parse_mode=ParseMode.MARKDOWN)
 
-
-def get_paste_stats(update: Update, context: CallbackContext):
+@run_async
+def get_paste_stats(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
 
-    if args and len(args) >= 1:
+    if len(args) >= 1:
         key = args[0]
     else:
         message.reply_text("Please supply a paste key!")
@@ -119,9 +124,9 @@ __help__ = """
 
 __mod_name__ = "dogbin"
 
-PASTE_HANDLER = DisableAbleCommandHandler("paste", paste, pass_args=True, run_async=True)
-GET_PASTE_HANDLER = DisableAbleCommandHandler("getpaste", get_paste_content, pass_args=True, run_async=True)
-PASTE_STATS_HANDLER = DisableAbleCommandHandler("pastestats", get_paste_stats, pass_args=True, run_async=True)
+PASTE_HANDLER = DisableAbleCommandHandler("paste", paste, pass_args=True)
+GET_PASTE_HANDLER = DisableAbleCommandHandler("getpaste", get_paste_content, pass_args=True)
+PASTE_STATS_HANDLER = DisableAbleCommandHandler("pastestats", get_paste_stats, pass_args=True)
 
 dispatcher.add_handler(PASTE_HANDLER)
 dispatcher.add_handler(GET_PASTE_HANDLER)

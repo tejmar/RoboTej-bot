@@ -1,11 +1,10 @@
 import html
 from io import BytesIO
-from typing import Optional
+from typing import Optional, List
 
-from certifi.__main__ import args
-from telegram import Message, Update, User, Chat
+from telegram import Message, Update, Bot, User, Chat
 from telegram.error import BadRequest, TelegramError
-from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import run_async, CommandHandler, MessageHandler, Filters
 from telegram.utils.helpers import mention_html
 
 import IHbot.modules.sql.global_mutes_sql as sql
@@ -19,7 +18,8 @@ from IHbot.modules.sql.users_sql import get_all_chats
 GMUTE_ENFORCE_GROUP = 6
 
 
-def gmute(update: Update, context: CallbackContext):
+@run_async
+def gmute(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message  # type: Optional[Message]
 
     user_id, reason = extract_user_and_text(message, args)
@@ -36,12 +36,12 @@ def gmute(update: Update, context: CallbackContext):
         message.reply_text("OOOH someone's trying to gmute a support user! *grabs popcorn*")
         return
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("-_- So funny, lets gmute myself why don't I? Nice try.")
         return
 
     try:
-        user_chat = context.bot.get_chat(user_id)
+        user_chat = bot.get_chat(user_id)
     except BadRequest as excp:
         message.reply_text(excp.message)
         return
@@ -67,7 +67,7 @@ def gmute(update: Update, context: CallbackContext):
     message.reply_text("*Shut the fuck up thanks* 🤐")
 
     muter = update.effective_user  # type: Optional[User]
-    send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
                  "<b>Global Mute</b>" \
                  "\n#GMUTE" \
                  "\n<b>Status:</b> <code>Enforcing</code>" \
@@ -75,9 +75,10 @@ def gmute(update: Update, context: CallbackContext):
                  "\n<b>User:</b> {}" \
                  "\n<b>ID:</b> <code>{}</code>" \
                  "\n<b>Reason:</b> {}".format(mention_html(muter.id, muter.first_name),
-                                              mention_html(user_chat.id, user_chat.first_name),
-                                              user_chat.id, reason or "No reason given"),
+                                              mention_html(user_chat.id, user_chat.first_name), 
+                                                           user_chat.id, reason or "No reason given"), 
                  html=True)
+
 
     sql.gmute_user(user_id, user_chat.username or user_chat.first_name, reason)
 
@@ -90,7 +91,7 @@ def gmute(update: Update, context: CallbackContext):
             continue
 
         try:
-            context.bot.restrict_chat_member(chat_id, user_id, can_send_messages=False)
+            bot.restrict_chat_member(chat_id, user_id, can_send_messages=False)
         except BadRequest as excp:
             if excp.message == "User is an administrator of the chat":
                 pass
@@ -116,20 +117,20 @@ def gmute(update: Update, context: CallbackContext):
                 pass
             else:
                 message.reply_text("Could not gmute due to: {}".format(excp.message))
-                send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS, "Could not gmute due to: {}".format(excp.message))
+                send_to_list(bot, SUDO_USERS + SUPPORT_USERS, "Could not gmute due to: {}".format(excp.message))
                 sql.ungmute_user(user_id)
                 return
         except TelegramError:
             pass
 
-    send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
-                 "{} has been successfully gmuted!".format(mention_html(user_chat.id, user_chat.first_name)),
-                 html=True)
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
+                  "{} has been successfully gmuted!".format(mention_html(user_chat.id, user_chat.first_name)),
+                html=True)
 
     message.reply_text("They won't be talking again anytime soon.")
 
-
-def ungmute(update: Update, context: CallbackContext):
+@run_async
+def ungmute(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message  # type: Optional[Message]
 
     user_id = extract_user(message, args)
@@ -137,7 +138,7 @@ def ungmute(update: Update, context: CallbackContext):
         message.reply_text("You don't seem to be referring to a user.")
         return
 
-    user_chat = context.bot.get_chat(user_id)
+    user_chat = bot.get_chat(user_id)
     if user_chat.type != 'private':
         message.reply_text("That's not a user!")
         return
@@ -150,16 +151,17 @@ def ungmute(update: Update, context: CallbackContext):
 
     message.reply_text("I'll let {} speak again, globally.".format(user_chat.first_name))
 
-    send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
                  "<b>Regression of Global Mute</b>" \
                  "\n#UNGMUTE" \
                  "\n<b>Status:</b> <code>Ceased</code>" \
                  "\n<b>Sudo Admin:</b> {}" \
                  "\n<b>User:</b> {}" \
                  "\n<b>ID:</b> <code>{}</code>".format(mention_html(muter.id, muter.first_name),
-                                                       mention_html(user_chat.id, user_chat.first_name),
-                                                       user_chat.id),
+                                                       mention_html(user_chat.id, user_chat.first_name), 
+                                                                    user_chat.id),
                  html=True)
+
 
     chats = get_all_chats()
     for chat in chats:
@@ -170,13 +172,13 @@ def ungmute(update: Update, context: CallbackContext):
             continue
 
         try:
-            member = context.bot.get_chat_member(chat_id, user_id)
+            member = bot.get_chat_member(chat_id, user_id)
             if member.status == 'restricted':
-                context.bot.restrict_chat_member(chat_id, int(user_id),
-                                                 can_send_messages=True,
-                                                 can_send_media_messages=True,
-                                                 can_send_other_messages=True,
-                                                 can_add_web_page_previews=True)
+                bot.restrict_chat_member(chat_id, int(user_id),
+                                     can_send_messages=True,
+                                     can_send_media_messages=True,
+                                     can_send_other_messages=True,
+                                     can_add_web_page_previews=True)
 
         except BadRequest as excp:
             if excp.message == "User is an administrator of the chat":
@@ -197,22 +199,23 @@ def ungmute(update: Update, context: CallbackContext):
                 pass
             else:
                 message.reply_text("Could not un-gmute due to: {}".format(excp.message))
-                context.bot.send_message(OWNER_ID, "Could not un-gmute due to: {}".format(excp.message))
+                bot.send_message(OWNER_ID, "Could not un-gmute due to: {}".format(excp.message))
                 return
         except TelegramError:
             pass
 
     sql.ungmute_user(user_id)
 
-    send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
-                 "{} has been successfully un-gmuted!".format(mention_html(user_chat.id,
-                                                                           user_chat.first_name)),
-                 html=True)
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS, 
+                  "{} has been successfully un-gmuted!".format(mention_html(user_chat.id, 
+                                                                         user_chat.first_name)),
+                  html=True)
 
     message.reply_text("Fine 😏 , I will let them speak ! ")
 
 
-def gmutelist(update: Update, context: CallbackContext):
+@run_async
+def gmutelist(bot: Bot, update: Update):
     muted_users = sql.get_gmute_list()
 
     if not muted_users:
@@ -238,28 +241,28 @@ def check_and_mute(bot, update, user_id, should_message=True):
             update.effective_message.reply_text("This is a bad person, I'll silence them for you!")
 
 
-def enforce_gmute(update: Update, context: CallbackContext):
+@run_async
+def enforce_gmute(bot: Bot, update: Update):
     # Not using @restrict handler to avoid spamming - just ignore if cant gmute.
-    if sql.does_chat_gmute(update.effective_chat.id) and update.effective_chat.get_member(
-            context.bot.id).can_restrict_members:
+    if sql.does_chat_gmute(update.effective_chat.id) and update.effective_chat.get_member(bot.id).can_restrict_members:
         user = update.effective_user  # type: Optional[User]
         chat = update.effective_chat  # type: Optional[Chat]
         msg = update.effective_message  # type: Optional[Message]
 
         if user and not is_user_admin(chat, user.id):
-            check_and_mute(context.bot, update, user.id, should_message=True)
+            check_and_mute(bot, update, user.id, should_message=True)
         if msg.new_chat_members:
             new_members = update.effective_message.new_chat_members
             for mem in new_members:
-                check_and_mute(context.bot, update, mem.id, should_message=True)
+                check_and_mute(bot, update, mem.id, should_message=True)
         if msg.reply_to_message:
             user = msg.reply_to_message.from_user  # type: Optional[User]
             if user and not is_user_admin(chat, user.id):
-                check_and_mute(context.bot, update, user.id, should_message=True)
+                check_and_mute(bot, update, user.id, should_message=True)
 
-
+@run_async
 @user_admin
-def gmutestat(update: Update, context: CallbackContext):
+def gmutestat(bot: Bot, update: Update, args: List[str]):
     if len(args) > 0:
         if args[0].lower() in ["on", "yes"]:
             sql.enable_gmutes(update.effective_chat.id)
@@ -315,15 +318,15 @@ you and your groups by removing spam flooders as quickly as possible. They can b
 __mod_name__ = "Global Mutes"
 
 GMUTE_HANDLER = CommandHandler("gmute", gmute, pass_args=True,
-                               filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
+                              filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 UNGMUTE_HANDLER = CommandHandler("ungmute", ungmute, pass_args=True,
-                                 filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
+                                filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 GMUTE_LIST = CommandHandler("gmutelist", gmutelist,
-                            filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
+                           filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 
-GMUTE_STATUS = CommandHandler("gmutestat", gmutestat, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+GMUTE_STATUS = CommandHandler("gmutestat", gmutestat, pass_args=True, filters=Filters.group)
 
-GMUTE_ENFORCER = MessageHandler(Filters.all & Filters.chat_type.groups, enforce_gmute, run_async=True)
+GMUTE_ENFORCER = MessageHandler(Filters.all & Filters.group, enforce_gmute)
 
 dispatcher.add_handler(GMUTE_HANDLER)
 dispatcher.add_handler(UNGMUTE_HANDLER)

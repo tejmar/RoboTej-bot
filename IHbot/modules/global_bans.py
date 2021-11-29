@@ -1,11 +1,10 @@
 import html
 from io import BytesIO
-from typing import Optional
+from typing import Optional, List
 
-from certifi.__main__ import args
-from telegram import Message, Update, User, Chat, ParseMode
+from telegram import Message, Update, Bot, User, Chat, ParseMode
 from telegram.error import BadRequest, TelegramError
-from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import run_async, CommandHandler, MessageHandler, Filters
 from telegram.utils.helpers import mention_html
 
 import IHbot.modules.sql.global_bans_sql as sql
@@ -44,7 +43,8 @@ UNGBAN_ERRORS = {
 }
 
 
-def gban(update: Update, context: CallbackContext):
+@run_async
+def gban(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message  # type: Optional[Message]
 
     user_id, reason = extract_user_and_text(message, args)
@@ -61,12 +61,12 @@ def gban(update: Update, context: CallbackContext):
         message.reply_text("OOOH someone's trying to gban a support user! *grabs popcorn*")
         return
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("-_- So funny, lets gban myself why don't I? Nice try.")
         return
 
     try:
-        user_chat = context.bot.get_chat(user_id)
+        user_chat = bot.get_chat(user_id)
     except BadRequest as excp:
         message.reply_text(excp.message)
         return
@@ -94,7 +94,7 @@ def gban(update: Update, context: CallbackContext):
     message.reply_text("*Summoning the ban axe* 😉")
 
     banner = update.effective_user  # type: Optional[User]
-    send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
                  "<b>Global Ban</b>" \
                  "\n#GBAN" \
                  "\n<b>Status:</b> <code>Enforcing</code>" \
@@ -102,9 +102,9 @@ def gban(update: Update, context: CallbackContext):
                  "\n<b>User:</b> {}" \
                  "\n<b>ID:</b> <code>{}</code>" \
                  "\n<b>Reason:</b> {}".format(mention_html(banner.id, banner.first_name),
-                                              mention_html(user_chat.id, user_chat.first_name),
-                                              user_chat.id, reason or "No reason given"),
-                 html=True)
+                                              mention_html(user_chat.id, user_chat.first_name), 
+                                                           user_chat.id, reason or "No reason given"), 
+                html=True)
 
     sql.gban_user(user_id, user_chat.username or user_chat.first_name, reason)
 
@@ -117,25 +117,25 @@ def gban(update: Update, context: CallbackContext):
             continue
 
         try:
-            context.bot.kick_chat_member(chat_id, user_id)
+            bot.kick_chat_member(chat_id, user_id)
         except BadRequest as excp:
             if excp.message in GBAN_ERRORS:
                 pass
             else:
                 message.reply_text("Could not gban due to: {}".format(excp.message))
-                send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS, "Could not gban due to: {}".format(excp.message))
+                send_to_list(bot, SUDO_USERS + SUPPORT_USERS, "Could not gban due to: {}".format(excp.message))
                 sql.ungban_user(user_id)
                 return
         except TelegramError:
             pass
 
-    send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
-                 "{} has been successfully gbanned!".format(mention_html(user_chat.id, user_chat.first_name)),
-                 html=True)
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
+                   "{} has been successfully gbanned!".format(mention_html(user_chat.id, user_chat.first_name)),
+                   html=True)
     message.reply_text("Person has been \"Dealt with\".")
 
-
-def ungban(update: Update, context: CallbackContext):
+@run_async
+def ungban(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message  # type: Optional[Message]
 
     user_id = extract_user(message, args)
@@ -143,7 +143,7 @@ def ungban(update: Update, context: CallbackContext):
         message.reply_text("You don't seem to be referring to a user.")
         return
 
-    user_chat = context.bot.get_chat(user_id)
+    user_chat = bot.get_chat(user_id)
     if user_chat.type != 'private':
         message.reply_text("That's not a user!")
         return
@@ -156,16 +156,16 @@ def ungban(update: Update, context: CallbackContext):
 
     message.reply_text("I'll give {} a second chance, globally.".format(user_chat.first_name))
 
-    send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
                  "<b>Regression of Global Ban</b>" \
                  "\n#UNGBAN" \
                  "\n<b>Status:</b> <code>Ceased</code>" \
                  "\n<b>Sudo Admin:</b> {}" \
                  "\n<b>User:</b> {}" \
                  "\n<b>ID:</b> <code>{}</code>".format(mention_html(banner.id, banner.first_name),
-                                                       mention_html(user_chat.id, user_chat.first_name),
-                                                       user_chat.id),
-                 html=True)
+                                                       mention_html(user_chat.id, user_chat.first_name), 
+                                                                    user_chat.id),
+                html=True)
 
     chats = get_all_chats()
     for chat in chats:
@@ -176,31 +176,32 @@ def ungban(update: Update, context: CallbackContext):
             continue
 
         try:
-            member = context.bot.get_chat_member(chat_id, user_id)
+            member = bot.get_chat_member(chat_id, user_id)
             if member.status == 'kicked':
-                context.bot.unban_chat_member(chat_id, user_id)
+                bot.unban_chat_member(chat_id, user_id)
 
         except BadRequest as excp:
             if excp.message in UNGBAN_ERRORS:
                 pass
             else:
                 message.reply_text("Could not un-gban due to: {}".format(excp.message))
-                context.bot.send_message(OWNER_ID, "Could not un-gban due to: {}".format(excp.message))
+                bot.send_message(OWNER_ID, "Could not un-gban due to: {}".format(excp.message))
                 return
         except TelegramError:
             pass
 
     sql.ungban_user(user_id)
 
-    send_to_list(context.bot, SUDO_USERS + SUPPORT_USERS,
-                 "{} has been successfully un-gbanned!".format(mention_html(user_chat.id,
-                                                                            user_chat.first_name)),
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
+                  "{} has been successfully un-gbanned!".format(mention_html(user_chat.id,
+                                                                         user_chat.first_name)),
                  html=True)
 
     message.reply_text("Person has been un-gbanned.")
 
 
-def gbanlist(update: Update, context: CallbackContext):
+@run_async
+def gbanlist(bot: Bot, update: Update):
     banned_users = sql.get_gban_list()
 
     if not banned_users:
@@ -226,10 +227,10 @@ def check_and_ban(update, user_id, should_message=True):
             update.effective_message.reply_text("This is a bad person, they shouldn't be here!")
 
 
-def enforce_gban(update: Update, context: CallbackContext):
+@run_async
+def enforce_gban(bot: Bot, update: Update):
     # Not using @restrict handler to avoid spamming - just ignore if cant gban.
-    if sql.does_chat_gban(update.effective_chat.id) and update.effective_chat.get_member(
-            context.bot.id).can_restrict_members:
+    if sql.does_chat_gban(update.effective_chat.id) and update.effective_chat.get_member(bot.id).can_restrict_members:
         user = update.effective_user  # type: Optional[User]
         chat = update.effective_chat  # type: Optional[Chat]
         msg = update.effective_message  # type: Optional[Message]
@@ -248,8 +249,9 @@ def enforce_gban(update: Update, context: CallbackContext):
                 check_and_ban(update, user.id, should_message=False)
 
 
+@run_async
 @user_admin
-def gbanstat(update: Update, context: CallbackContext):
+def gbanstat(bot: Bot, update: Update, args: List[str]):
     if len(args) > 0:
         if args[0].lower() in ["on", "yes"]:
             sql.enable_gbans(update.effective_chat.id)
@@ -306,15 +308,15 @@ you and your groups by removing spam flooders as quickly as possible. They can b
 __mod_name__ = "Global Bans"
 
 GBAN_HANDLER = CommandHandler("gban", gban, pass_args=True,
-                              filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
+                              filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 UNGBAN_HANDLER = CommandHandler("ungban", ungban, pass_args=True,
-                                filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
+                                filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 GBAN_LIST = CommandHandler("gbanlist", gbanlist,
-                           filters=CustomFilters.sudo_filter | CustomFilters.support_filter, run_async=True)
+                           filters=CustomFilters.sudo_filter | CustomFilters.support_filter)
 
-GBAN_STATUS = CommandHandler("gbanstat", gbanstat, pass_args=True, filters=Filters.chat_type.groups, run_async=True)
+GBAN_STATUS = CommandHandler("gbanstat", gbanstat, pass_args=True, filters=Filters.group)
 
-GBAN_ENFORCER = MessageHandler(Filters.all & Filters.chat_type.groups, enforce_gban, run_async=True)
+GBAN_ENFORCER = MessageHandler(Filters.all & Filters.group, enforce_gban)
 
 dispatcher.add_handler(GBAN_HANDLER)
 dispatcher.add_handler(UNGBAN_HANDLER)

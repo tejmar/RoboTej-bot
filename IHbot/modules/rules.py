@@ -1,9 +1,9 @@
 from typing import Optional
 
-from telegram import Message, Update, User
+from telegram import Message, Update, Bot, User
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, Filters, CallbackContext
+from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown
 
 import IHbot.modules.sql.rules_sql as sql
@@ -12,7 +12,8 @@ from IHbot.modules.helper_funcs.chat_status import user_admin
 from IHbot.modules.helper_funcs.string_handling import markdown_parser
 
 
-def get_rules(update: Update, context: CallbackContext):
+@run_async
+def get_rules(bot: Bot, update: Update):
     chat_id = update.effective_chat.id
     send_rules(update, chat_id)
 
@@ -50,8 +51,9 @@ def send_rules(update, chat_id, from_pm=False):
                                             "This probably doesn't mean it's lawless though...!")
 
 
+@run_async
 @user_admin
-def set_rules(update: Update, context: CallbackContext):
+def set_rules(bot: Bot, update: Update):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
     raw_text = msg.text
@@ -65,8 +67,9 @@ def set_rules(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Successfully set rules for this group.")
 
 
+@run_async
 @user_admin
-def clear_rules(update: Update, context: CallbackContext):
+def clear_rules(bot: Bot, update: Update):
     chat_id = update.effective_chat.id
     sql.set_rules(chat_id, "")
     update.effective_message.reply_text("Successfully cleared rules!")
@@ -100,9 +103,9 @@ __help__ = """
 
 __mod_name__ = "Rules"
 
-GET_RULES_HANDLER = CommandHandler("rules", get_rules, filters=Filters.chat_type.groups, run_async=True)
-SET_RULES_HANDLER = CommandHandler("setrules", set_rules, filters=Filters.chat_type.groups, run_async=True)
-RESET_RULES_HANDLER = CommandHandler("clearrules", clear_rules, filters=Filters.chat_type.groups, run_async=True)
+GET_RULES_HANDLER = CommandHandler("rules", get_rules, filters=Filters.group)
+SET_RULES_HANDLER = CommandHandler("setrules", set_rules, filters=Filters.group)
+RESET_RULES_HANDLER = CommandHandler("clearrules", clear_rules, filters=Filters.group)
 
 dispatcher.add_handler(GET_RULES_HANDLER)
 dispatcher.add_handler(SET_RULES_HANDLER)

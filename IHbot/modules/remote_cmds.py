@@ -1,11 +1,15 @@
-from certifi.__main__ import args
-from telegram import Update
-from telegram.error import BadRequest
-from telegram.ext import CommandHandler, CallbackContext
+import html
+from typing import Optional, List
 
-from IHbot import dispatcher, LOGGER
-from IHbot.modules.helper_funcs.chat_status import bot_admin, is_user_ban_protected, is_user_in_chat, is_bot_admin
+from telegram import Message, Chat, Update, Bot, User
+from telegram.error import BadRequest
+from telegram.ext import run_async, CommandHandler, Filters
+from telegram.utils.helpers import mention_html
+
+from IHbot import dispatcher
+from IHbot.modules.helper_funcs.chat_status import bot_admin, user_admin, is_user_ban_protected, can_restrict, is_user_admin, is_user_in_chat, is_bot_admin
 from IHbot.modules.helper_funcs.extraction import extract_user_and_text
+from IHbot.modules.helper_funcs.string_handling import extract_time
 from IHbot.modules.helper_funcs.filters import CustomFilters
 
 RBAN_ERRORS = {
@@ -78,9 +82,9 @@ RUNMUTE_ERRORS = {
     "Not in the chat"
 }
 
-
+@run_async
 @bot_admin
-def rban(update: Update, context: CallbackContext):
+def rban(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
 
     if not args:
@@ -97,7 +101,7 @@ def rban(update: Update, context: CallbackContext):
         return
 
     try:
-        chat = context.bot.get_chat(chat_id.split()[0])
+        chat = bot.get_chat(chat_id.split()[0])
     except BadRequest as excp:
         if excp.message == "Chat not found":
             message.reply_text("Chat not found! Make sure you entered a valid chat ID and I'm part of that chat.")
@@ -109,7 +113,7 @@ def rban(update: Update, context: CallbackContext):
         message.reply_text("I'm sorry, but that's a private chat!")
         return
 
-    if not is_bot_admin(chat, context.bot.id) or not chat.get_member(context.bot.id).can_restrict_members:
+    if not is_bot_admin(chat, bot.id) or not chat.get_member(bot.id).can_restrict_members:
         message.reply_text("I can't restrict people there! Make sure I'm admin and can ban users.")
         return
 
@@ -126,7 +130,7 @@ def rban(update: Update, context: CallbackContext):
         message.reply_text("I really wish I could ban admins...")
         return
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("I'm not gonna BAN myself, are you crazy?")
         return
 
@@ -145,9 +149,9 @@ def rban(update: Update, context: CallbackContext):
                              excp.message)
             message.reply_text("Well damn, I can't ban that user.")
 
-
+@run_async
 @bot_admin
-def runban(update: Update, context: CallbackContext):
+def runban(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
 
     if not args:
@@ -164,7 +168,7 @@ def runban(update: Update, context: CallbackContext):
         return
 
     try:
-        chat = context.bot.get_chat(chat_id.split()[0])
+        chat = bot.get_chat(chat_id.split()[0])
     except BadRequest as excp:
         if excp.message == "Chat not found":
             message.reply_text("Chat not found! Make sure you entered a valid chat ID and I'm part of that chat.")
@@ -176,7 +180,7 @@ def runban(update: Update, context: CallbackContext):
         message.reply_text("I'm sorry, but that's a private chat!")
         return
 
-    if not is_bot_admin(chat, context.bot.id) or not chat.get_member(context.bot.id).can_restrict_members:
+    if not is_bot_admin(chat, bot.id) or not chat.get_member(bot.id).can_restrict_members:
         message.reply_text("I can't unrestrict people there! Make sure I'm admin and can unban users.")
         return
 
@@ -188,12 +192,12 @@ def runban(update: Update, context: CallbackContext):
             return
         else:
             raise
-
+            
     if is_user_in_chat(chat, user_id):
         message.reply_text("Why are you trying to remotely unban someone that's already in that chat?")
         return
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("I'm not gonna UNBAN myself, I'm an admin there!")
         return
 
@@ -212,9 +216,9 @@ def runban(update: Update, context: CallbackContext):
                              excp.message)
             message.reply_text("Well damn, I can't unban that user.")
 
-
+@run_async
 @bot_admin
-def rkick(update: Update, context: CallbackContext):
+def rkick(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
 
     if not args:
@@ -231,7 +235,7 @@ def rkick(update: Update, context: CallbackContext):
         return
 
     try:
-        chat = context.bot.get_chat(chat_id.split()[0])
+        chat = bot.get_chat(chat_id.split()[0])
     except BadRequest as excp:
         if excp.message == "Chat not found":
             message.reply_text("Chat not found! Make sure you entered a valid chat ID and I'm part of that chat.")
@@ -243,7 +247,7 @@ def rkick(update: Update, context: CallbackContext):
         message.reply_text("I'm sorry, but that's a private chat!")
         return
 
-    if not is_bot_admin(chat, context.bot.id) or not chat.get_member(context.bot.id).can_restrict_members:
+    if not is_bot_admin(chat, bot.id) or not chat.get_member(bot.id).can_restrict_members:
         message.reply_text("I can't restrict people there! Make sure I'm admin and can kick users.")
         return
 
@@ -260,7 +264,7 @@ def rkick(update: Update, context: CallbackContext):
         message.reply_text("I really wish I could kick admins...")
         return
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("I'm not gonna KICK myself, are you crazy?")
         return
 
@@ -279,9 +283,9 @@ def rkick(update: Update, context: CallbackContext):
                              excp.message)
             message.reply_text("Well damn, I can't kick that user.")
 
-
+@run_async
 @bot_admin
-def rmute(update: Update, context: CallbackContext):
+def rmute(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
 
     if not args:
@@ -298,7 +302,7 @@ def rmute(update: Update, context: CallbackContext):
         return
 
     try:
-        chat = context.bot.get_chat(chat_id.split()[0])
+        chat = bot.get_chat(chat_id.split()[0])
     except BadRequest as excp:
         if excp.message == "Chat not found":
             message.reply_text("Chat not found! Make sure you entered a valid chat ID and I'm part of that chat.")
@@ -310,7 +314,7 @@ def rmute(update: Update, context: CallbackContext):
         message.reply_text("I'm sorry, but that's a private chat!")
         return
 
-    if not is_bot_admin(chat, context.bot.id) or not chat.get_member(context.bot.id).can_restrict_members:
+    if not is_bot_admin(chat, bot.id) or not chat.get_member(bot.id).can_restrict_members:
         message.reply_text("I can't restrict people there! Make sure I'm admin and can mute users.")
         return
 
@@ -327,12 +331,12 @@ def rmute(update: Update, context: CallbackContext):
         message.reply_text("I really wish I could mute admins...")
         return
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("I'm not gonna MUTE myself, are you crazy?")
         return
 
     try:
-        context.bot.restrict_chat_member(chat.id, user_id, can_send_messages=False)
+        bot.restrict_chat_member(chat.id, user_id, can_send_messages=False)
         message.reply_text("Muted from the chat!")
     except BadRequest as excp:
         if excp.message == "Reply message not found":
@@ -346,9 +350,9 @@ def rmute(update: Update, context: CallbackContext):
                              excp.message)
             message.reply_text("Well damn, I can't mute that user.")
 
-
+@run_async
 @bot_admin
-def runmute(update: Update, context: CallbackContext):
+def runmute(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
 
     if not args:
@@ -365,7 +369,7 @@ def runmute(update: Update, context: CallbackContext):
         return
 
     try:
-        chat = context.bot.get_chat(chat_id.split()[0])
+        chat = bot.get_chat(chat_id.split()[0])
     except BadRequest as excp:
         if excp.message == "Chat not found":
             message.reply_text("Chat not found! Make sure you entered a valid chat ID and I'm part of that chat.")
@@ -377,7 +381,7 @@ def runmute(update: Update, context: CallbackContext):
         message.reply_text("I'm sorry, but that's a private chat!")
         return
 
-    if not is_bot_admin(chat, context.bot.id) or not chat.get_member(context.bot.id).can_restrict_members:
+    if not is_bot_admin(chat, bot.id) or not chat.get_member(bot.id).can_restrict_members:
         message.reply_text("I can't unrestrict people there! Make sure I'm admin and can unban users.")
         return
 
@@ -389,23 +393,23 @@ def runmute(update: Update, context: CallbackContext):
             return
         else:
             raise
-
+            
     if is_user_in_chat(chat, user_id):
-        if member.can_send_messages and member.can_send_media_messages \
-                and member.can_send_other_messages and member.can_add_web_page_previews:
-            message.reply_text("This user already has the right to speak in that chat.")
-            return
+       if member.can_send_messages and member.can_send_media_messages \
+          and member.can_send_other_messages and member.can_add_web_page_previews:
+        message.reply_text("This user already has the right to speak in that chat.")
+        return
 
-    if user_id == context.bot.id:
+    if user_id == bot.id:
         message.reply_text("I'm not gonna UNMUTE myself, I'm an admin there!")
         return
 
     try:
-        context.bot.restrict_chat_member(chat.id, int(user_id),
-                                         can_send_messages=True,
-                                         can_send_media_messages=True,
-                                         can_send_other_messages=True,
-                                         can_add_web_page_previews=True)
+        bot.restrict_chat_member(chat.id, int(user_id),
+                                     can_send_messages=True,
+                                     can_send_media_messages=True,
+                                     can_send_other_messages=True,
+                                     can_add_web_page_previews=True)
         message.reply_text("Yep, this user can talk in that chat!")
     except BadRequest as excp:
         if excp.message == "Reply message not found":
@@ -419,16 +423,15 @@ def runmute(update: Update, context: CallbackContext):
                              excp.message)
             message.reply_text("Well damn, I can't unmute that user.")
 
-
 __help__ = ""
 
 __mod_name__ = "Remote Commands"
 
-RBAN_HANDLER = CommandHandler("rban", rban, pass_args=True, filters=CustomFilters.sudo_filter, run_async=True)
-RUNBAN_HANDLER = CommandHandler("runban", runban, pass_args=True, filters=CustomFilters.sudo_filter, run_async=True)
-RKICK_HANDLER = CommandHandler("rkick", rkick, pass_args=True, filters=CustomFilters.sudo_filter, run_async=True)
-RMUTE_HANDLER = CommandHandler("rmute", rmute, pass_args=True, filters=CustomFilters.sudo_filter, run_async=True)
-RUNMUTE_HANDLER = CommandHandler("runmute", runmute, pass_args=True, filters=CustomFilters.sudo_filter, run_async=True)
+RBAN_HANDLER = CommandHandler("rban", rban, pass_args=True, filters=CustomFilters.sudo_filter)
+RUNBAN_HANDLER = CommandHandler("runban", runban, pass_args=True, filters=CustomFilters.sudo_filter)
+RKICK_HANDLER = CommandHandler("rkick", rkick, pass_args=True, filters=CustomFilters.sudo_filter)
+RMUTE_HANDLER = CommandHandler("rmute", rmute, pass_args=True, filters=CustomFilters.sudo_filter)
+RUNMUTE_HANDLER = CommandHandler("runmute", runmute, pass_args=True, filters=CustomFilters.sudo_filter)
 
 dispatcher.add_handler(RBAN_HANDLER)
 dispatcher.add_handler(RUNBAN_HANDLER)
