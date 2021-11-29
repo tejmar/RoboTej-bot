@@ -3,7 +3,7 @@ import re
 import aiml
 import telegram
 from telegram import Update
-from telegram.ext import MessageHandler, Filters, CallbackContext
+from telegram.ext import MessageHandler, Filters
 from telegram.ext.filters import MergedFilter, InvertedFilter
 
 from IHbot import dispatcher
@@ -130,7 +130,7 @@ def words_are_greeting(msg):
         "(how a?bout ?(cha|y?o?u)|hi[ $!.]|hello|fine,? (thanks|y?o?ur ?self)|what'?s? up|wh?addup|^yo[ $!.])", msg)
 
 
-def converse(update: Update, context: CallbackContext):
+def converse(bot: Bot, update: Update):
     message = update.effective_message
     if (
             message.reply_to_message and message.reply_to_message.from_user.id and message.reply_to_message.from_user.id == context.bot.id) \
