@@ -102,6 +102,7 @@ def new_member(bot: Bot, update: Update):
                 bot.restrict_chat_member(chat.id, mems.id, can_send_messages=False, can_send_media_messages=False,
                                          can_send_other_messages=False, can_add_web_page_previews=False,
                                          until_date=(int(time.time() + 24 * 60 * 60 * 365 * 100)))
+                update.effective_message.reply_text("User is CAS banned!")
                 LOGGER.warning(update)
                 LOGGER.info("INFO: TOTALLY muting user %s for 100 years in chat %s (%s) due to CAS saying: %s", mems.id,
                             chat.title,
