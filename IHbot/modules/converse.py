@@ -124,7 +124,6 @@ alice.learn('/app/IHbot/aiml/botdata/alice/religion.aiml')
 # alice.respond('load aiml b')
 print("finished learning")
 
-alice.setBotPredicate("name", dispatcher.bot.first_name)
 alice.setBotPredicate("master", "Tejmar")
 alice.setBotPredicate("botmaster", "botmaster")
 alice.setBotPredicate("order", "chatbot")
@@ -221,15 +220,12 @@ def converse(bot: Bot, update: Update):
             or words_are_greeting(message.text):
         bot.sendChatAction(update.effective_chat.id, "typing")  # Bot typing before send messages
         try:
+            alice.setBotPredicate("name", bot.first_name)
             message.reply_text(
                 alice.respond(update.effective_message.text, update.effective_user.id))
         except:
             pass
 
-
-__help__ = """
- - Bot responds to certain messages conversationally
-""".format(telegram.MAX_MESSAGE_LENGTH)
 
 __mod_name__ = "Converse"
 
