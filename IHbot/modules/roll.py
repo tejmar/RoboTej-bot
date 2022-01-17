@@ -1,10 +1,11 @@
 
-from random import randint, randrange
 import telegram
+from random import randint, randrange
 from telegram import Update, Bot
 from telegram.ext import MessageHandler, Filters, run_async
 
 from IHbot import dispatcher
+from IHbot.modules.disable import DisableAbleCommandHandler
 
 
 @run_async
