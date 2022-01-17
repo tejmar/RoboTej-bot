@@ -51,6 +51,6 @@ __help__ = """
 
 __mod_name__ = "Roll"
 
-ROLL_HANDLER = DisableAbleCommandHandler("roll", rollDice)
+ROLL_HANDLER = DisableAbleCommandHandler("roll", rollDice, pass_args=True)
 
 dispatcher.add_handler(ROLL_HANDLER)
