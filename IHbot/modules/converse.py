@@ -177,7 +177,7 @@ alice.setBotPredicate("hair", "Doggy color")
 alice.setBotPredicate("hockeyteam", "Penguin")
 alice.setBotPredicate("job", "Talking to weird internet people")
 alice.setBotPredicate("kindmusic", "metal")
-alice.setBotPredicate("kingdom", "animalia")
+alice.setBotPredicate("kingdom", "bot")
 alice.setBotPredicate("language", "python")
 # sorry about the spleling
 alice.setBotPredicate("location", "mom's basement")
