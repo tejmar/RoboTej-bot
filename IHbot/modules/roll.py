@@ -27,7 +27,7 @@ def rollDice(bot: Bot, update: Update):
         # roll = [below]
         text = str(randrange(10 ** 8, 10 ** 9))  # generate the roll
 
-        message.reply_text(roll)
+        update.effective_message.reply_text(roll)
 
         # for i in roll:  # basically this whole chunk detects if there are dubs trips etc
         #     roll_list.append(i)
