@@ -17,6 +17,8 @@ def rollDice(bot: Bot, update: Update, args):
         dice_number = int(args[0])
     except ValueError:
         dice_number = 0
+    except IndexError:
+        dice_number = 0
 
     if dice_number:
         result = randint(1, dice_number)
