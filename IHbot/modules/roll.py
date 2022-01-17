@@ -1,5 +1,5 @@
 
-from random import randint
+from random import randint, randrange
 import telegram
 from telegram import Update, Bot
 from telegram.ext import MessageHandler, Filters, run_async
@@ -17,11 +17,11 @@ def rollDice(bot: Bot, update: Update):
     except ValueError:
         dice_number = 0
 
-    if (dice_number):
+    if dice_number:
         result = randint(1, dice_number)
         text = "You rolled " + str(result)
     else:
-        roll_list = []
+        # roll_list = []
 
         # roll = [below]
         text = str(randrange(10 ** 8, 10 ** 9))  # generate the roll
@@ -47,7 +47,7 @@ def rollDice(bot: Bot, update: Update):
 
 
 __help__ = """
- - /roll <number>: roll a die with <number> sides and return the result.
+ - /roll [number]: roll a die with [number] sides and return the result.
 """
 
 __mod_name__ = "Roll"
