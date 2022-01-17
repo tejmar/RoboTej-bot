@@ -22,14 +22,12 @@ def rollDice(bot: Bot, update: Update):
         result = randint(1, dice_number)
         text = "You rolled " + str(result)
     else:
-        # roll_list = []
 
-        # roll = [below]
         text = str(randrange(10 ** 8, 10 ** 9))  # generate the roll
+        update.effective_message.reply_text(text)
 
-        update.effective_message.reply_text(roll)
-
-        # for i in roll:  # basically this whole chunk detects if there are dubs trips etc
+        # roll_list = []
+        # for i in text:  # basically this whole chunk detects if there are dubs trips etc
         #     roll_list.append(i)
         # counter = 0
         # for i in range(0, 8):
@@ -37,6 +35,7 @@ def rollDice(bot: Bot, update: Update):
         #         counter += 1
         #     else:
         #         counter = 0
+
     try:
         # Perhaps we can use tg die emoji thing for D6.
         # Then again, you could do that without the bot. So perhaps not.
