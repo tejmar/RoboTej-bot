@@ -1,8 +1,7 @@
-
-import telegram
 from random import randint, randrange
+
 from telegram import Update, Bot
-from telegram.ext import MessageHandler, Filters, run_async
+from telegram.ext import run_async
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
@@ -12,16 +11,25 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 def rollDice(bot: Bot, update: Update, args):
     text = ""
     dice_number = 0
+    lower = 1
 
     try:
         dice_number = int(args[0])
     except ValueError:
-        dice_number = 0
+        nums = args[0].split("d")
+        if len(nums) == 2:
+            try:
+                lower = int(nums[0])
+                dice_number = int(nums[0]) * int(nums[1])
+            except ValueError:
+                dice_number = 0
+        else:
+            dice_number = 0
     except IndexError:
         dice_number = 0
 
     if dice_number:
-        result = randint(1, dice_number)
+        result = randint(lower, dice_number)
         text = "You rolled " + str(result)
     else:
 
