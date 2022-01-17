@@ -9,12 +9,12 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 
 
 @run_async
-def rollDice(bot: Bot, update: Update):
+def rollDice(bot: Bot, update: Update, args):
     text = ""
     dice_number = 0
 
     try:
-        dice_number = int(update.effective_message.text[5:])
+        dice_number = int(args[0])
     except ValueError:
         dice_number = 0
 
