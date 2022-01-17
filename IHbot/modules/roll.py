@@ -24,7 +24,6 @@ def rollDice(bot: Bot, update: Update):
     else:
 
         text = str(randrange(10 ** 8, 10 ** 9))  # generate the roll
-        update.effective_message.reply_text(text)
 
         # roll_list = []
         # for i in text:  # basically this whole chunk detects if there are dubs trips etc
@@ -39,7 +38,7 @@ def rollDice(bot: Bot, update: Update):
     try:
         # Perhaps we can use tg die emoji thing for D6.
         # Then again, you could do that without the bot. So perhaps not.
-        message.reply_text(text)
+        update.effective_message.reply_text(text)
 
         # here, congratulate for quads etc, if we implment the other part of what jan does ;-)
     except:
