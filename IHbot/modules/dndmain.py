@@ -133,7 +133,7 @@ class Character(object):
             self.stats['experience'] = 0
 
 
-def setDM(bot, update):
+def setDM(bot, update, args):
     global DM
     if DM is None:
         DM = update.message.from_user.first_name
@@ -142,7 +142,7 @@ def setDM(bot, update):
         update.effective_message.reply_text("DM " + DM + " has already been set!")
 
 
-def createCharacter(bot, update):
+def createCharacter(bot, update, args):
     global playerIndex
     if findCharacterIndex(update.message.from_user.first_name) != -1:
         update.effective_message.reply_text("@" + update.message.from_user.first_name + " already has a character")
@@ -162,7 +162,7 @@ def createCharacter(bot, update):
     attributes = True
 
 
-# def incomingMessages(bot, update):
+# def incomingMessages(bot, update, args):
 #     global attributes
 #     if attributes:
 #         attributes_input = update.message.text.lower()
@@ -193,7 +193,7 @@ def createCharacter(bot, update):
 #         attributes = False
 
 
-def printCharacterStats(bot, update):
+def printCharacterStats(bot, update, args):
     # /printcharacterstats CHARACTER_NAME
     user_input = parseInput(update.message.text, 2)
     i = getIndexFromCharacter(user_input[1])
@@ -220,7 +220,7 @@ def findCharacterIndex(first_name):
     return -1
 
 
-def alterHealth(bot, update):
+def alterHealth(bot, update, args):
     # /changehealth charactername value
     user = update.message.from_user.first_name
     if user != DM:
@@ -234,7 +234,7 @@ def alterHealth(bot, update):
             2] + " to " + str(characterList[i].stats['health']))
 
 
-def inventoryUpdate(bot, update):
+def inventoryUpdate(bot, update, args):
     user = update.message.from_user.first_name
     if user != DM:
         update.effective_message.reply_text("You're not authorised to use this command!")
@@ -271,7 +271,7 @@ def inventoryUpdate(bot, update):
         update.effective_message.reply_text(text)
 
 
-def printInventory(bot, update):
+def printInventory(bot, update, args):
     inventory_input = update.message.text
     inventory_input = inventory_input.split()
     name = inventory_input[1]
@@ -283,7 +283,7 @@ def printInventory(bot, update):
     update.effective_message.reply_text(text)
 
 
-def alterGold(bot, update):
+def alterGold(bot, update, args):
     # /changehealth charactername value
     user = update.message.from_user.first_name
     if user != DM:
@@ -298,7 +298,7 @@ def alterGold(bot, update):
             2] + " to " + str(characterList[i].stats['gold']))
 
 
-def alterExperience(bot, update):
+def alterExperience(bot, update, args):
     # /changeXP character_name value
     user = update.message.from_user.first_name
     if user != DM:
