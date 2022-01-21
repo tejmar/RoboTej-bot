@@ -179,7 +179,11 @@ def createCharacter(bot, update, args):
         return False
 
     ch = Character(player_name, character_name)
-    ch.updateStats(race, _class)
+    try:
+        ch.updateStats(race, _class)
+    except ValueError as e:
+        update.effective_message.reply_text(e)
+        return False
     characterList.append(ch)
     # Displays "Character [Character] has been created [Player]"
     update.effective_message.reply_text("Character " + character_name + "has been created  by " + player_name)
