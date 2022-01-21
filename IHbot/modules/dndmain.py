@@ -153,7 +153,7 @@ def setDM(bot, update, args):
     global DM
     if DM.id == 0:
         DM = update.message.from_user
-        update.effective_message.reply_text(DM + " has been set as Dungeon Master")
+        update.effective_message.reply_text(DM.first_name + " has been set as Dungeon Master")
     else:
         update.effective_message.reply_text("DM " + DM.first_name + " has already been set!")
 
