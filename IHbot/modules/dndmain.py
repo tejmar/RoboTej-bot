@@ -7,8 +7,6 @@ characterList = []
 playerIndex = 0
 DM = User(first_name="", id=0, is_bot=True)
 
-attributes = False
-
 # This module has a lot of issues I'd like to fix before pushing it into a production bot.
 # I'm committing in an unsatisfactory spot so that I can catch any glaring derps before I start hacking it up.
 # What I would like to investigate:
@@ -40,6 +38,7 @@ class Character(object):
         self.characterName = character_name.lower()
 
     def updateStats(self, race, _class):
+        # FIXME throw and/or default if the race/class is invalid
         self.race = race
         self._class = _class
 
@@ -97,6 +96,8 @@ class Character(object):
             self.stats['charisma'] = 3
             if self.stats['constitution'] == 4:
                 self.stats['health'] = 17
+        else:
+            raise ValueError(race + " is not a valid race! You must choose (human|dwarf|elf|ogre|merman)")
 
         # Class Stats for Fighter
         if self._class == 'fighter':
@@ -147,6 +148,8 @@ class Character(object):
             self.stats['charisma'] = self.stats['charisma'] + 1
             self.stats['gold'] = 200
             self.stats['experience'] = 0
+        else:
+            raise ValueError(_class + " is not a valid class! You must choose (fighter|mage|priest|thief|ranger)")
 
 
 def setDM(bot, update, args):
@@ -171,8 +174,8 @@ def createCharacter(bot, update, args):
         _class = args[2]
     except IndexError:
         # Displays "@[Player] Please enter your character's attributes in the format of [Race] [Class]"
-        update.effective_message.reply_text("@" + player_name + "Please enter your character's Race & Class in the "
-                                                                "format: [Name] [Race] [Class]")
+        update.effective_message.reply_text(player_name + ": Please enter your character's Race & Class in the "
+                                                          "format: [Name] [Race] [Class]")
         return False
 
     ch = Character(player_name, character_name)
@@ -182,8 +185,6 @@ def createCharacter(bot, update, args):
     update.effective_message.reply_text("Character " + character_name + "has been created  by " + player_name)
     playerIndex += 1
 
-    global attributes
-    attributes = True
     return True
 
 
