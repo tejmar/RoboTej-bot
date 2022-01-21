@@ -161,23 +161,30 @@ def setDM(bot, update, args):
 def createCharacter(bot, update, args):
     global playerIndex
     if findCharacterIndex(update.message.from_user.first_name) != -1:
-        update.effective_message.reply_text("@" + update.message.from_user.first_name + " already has a character")
+        update.effective_message.reply_text(update.message.from_user.first_name + " already has a character")
         return None
-    character_name = args[0]
-    race = args[1]
-    _class = args[2]
     player_name = update.message.from_user.first_name
+    # need to crash or default if these are not set
+    try:
+        character_name = args[0]
+        race = args[1]
+        _class = args[2]
+    except IndexError:
+        # Displays "@[Player] Please enter your character's attributes in the format of [Race] [Class]"
+        update.effective_message.reply_text("@" + player_name + "Please enter your character's Race & Class in the "
+                                                                "format: [Name] [Race] [Class]")
+        return False
+
     ch = Character(player_name, character_name)
     ch.updateStats(race, _class)
     characterList.append(ch)
     # Displays "Character [Character] has been created [Player]"
     update.effective_message.reply_text("Character " + character_name + "has been created  by " + player_name)
     playerIndex += 1
-    # Displays "@[Player] Please enter your character's attributes in the format of [Race] [Class]"
-    update.effective_message.reply_text("@" + player_name + "Please enter your character's Race & Class in the "
-                                                            "format: [Name] [Race] [Class]")
+
     global attributes
     attributes = True
+    return True
 
 
 # def incomingMessages(bot, update, args):
