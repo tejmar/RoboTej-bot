@@ -5,7 +5,7 @@ from IHbot.modules.disable import DisableAbleCommandHandler
 
 characterList = []
 playerIndex = 0
-DM = User
+DM = User(first_name="", id=0, is_bot=True)
 
 attributes = False
 
@@ -151,7 +151,7 @@ class Character(object):
 
 def setDM(bot, update, args):
     global DM
-    if DM is None:
+    if DM.id == 0:
         DM = update.message.from_user
         update.effective_message.reply_text(DM + " has been set as Dungeon Master")
     else:
@@ -241,7 +241,7 @@ def findCharacterIndex(first_name):
 def alterHealth(bot, update, args):
     # /changehealth charactername value
     user = update.message.from_user
-    if DM and user.id != DM.id:
+    if user.id != DM.id:
         update.effective_message.reply_text("You're not authorised to use this command!")
     else:
         user_input = parseInput(update.message.text, 3)
@@ -254,7 +254,7 @@ def alterHealth(bot, update, args):
 
 def inventoryUpdate(bot, update, args):
     user = update.message.from_user
-    if DM and user.id != DM.id:
+    if user.id != DM.id:
         update.effective_message.reply_text("You're not authorised to use this command!")
     else:
         inventory_input = parseInput(update.message.text, 5)
@@ -304,7 +304,7 @@ def printInventory(bot, update, args):
 def alterGold(bot, update, args):
     # /changehealth charactername value
     user = update.message.from_user
-    if DM and user.id != DM.id:
+    if user.id != DM.id:
         update.effective_message.reply_text("You're not authorised to use this command!")
     else:
         user_input = parseInput(update.message.text, 3)
@@ -319,7 +319,7 @@ def alterGold(bot, update, args):
 def alterExperience(bot, update, args):
     # /changeXP character_name value
     user = update.message.from_user
-    if DM and user.id != DM.id:
+    if user.id != DM.id:
         update.effective_message.reply_text("You're not authorised to use this command!")
     else:
         user_input = parseInput(update.message.text, 3)
