@@ -182,7 +182,7 @@ def createCharacter(bot, update, args):
     try:
         ch.updateStats(race, _class)
     except ValueError as e:
-        update.effective_message.reply_text(e)
+        update.effective_message.reply_text(str(e))
         return False
     characterList.append(ch)
     # Displays "Character [Character] has been created [Player]"
