@@ -1,9 +1,11 @@
+from telegram import User
+
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
 
 characterList = []
 playerIndex = 0
-DM = None
+DM = User
 
 attributes = False
 
@@ -15,6 +17,13 @@ attributes = False
 # 3. Persistence through "reboot"s
 # 4. Identifying DMs/players by ID, not by name
 # 5. Using command args where possible (not making assumptions about boundaries in strings etc)
+# 6. DM is set *by anyone* to calling user (and can't be changed)
+# 7. All commands produce un-graceful crashes when presented without input (except setdm and addcharacter)
+# 8. Addcharacter doesn't might execute in wrong order or properly init character
+
+# First I get everything working the way I want (args, syntax, business logic)
+# The last step will be to use db and other stuff to solve problems 2 and 3.
+# I think that'll be easier to test once the gist of everything mostly works.
 
 
 class Character(object):
@@ -31,6 +40,13 @@ class Character(object):
         self.characterName = character_name.lower()
 
     def updateStats(self, race, _class):
+        self.race = race
+        self._class = _class
+
+        # down here, why does it say like "if constitution x then health y"?
+        # what if it doesn't? i don't understand the point of the conditional
+        # i mean, it can't be false... ? ...
+
         # Race Stats for Human
         if self.race == 'human':
             self.stats['strength'] = 5
@@ -81,6 +97,7 @@ class Character(object):
             self.stats['charisma'] = 3
             if self.stats['constitution'] == 4:
                 self.stats['health'] = 17
+
         # Class Stats for Fighter
         if self._class == 'fighter':
             self.stats['strength'] = self.stats['strength'] + 2
@@ -91,7 +108,6 @@ class Character(object):
             self.stats['charisma'] = self.stats['charisma'] - 1
             self.stats['gold'] = 50
             self.stats['experience'] = 0
-
         # Class Stats for Mage
         elif self._class == 'mage':
             self.stats['strength'] = self.stats['strength'] - 2
@@ -136,10 +152,10 @@ class Character(object):
 def setDM(bot, update, args):
     global DM
     if DM is None:
-        DM = update.message.from_user.first_name
+        DM = update.message.from_user
         update.effective_message.reply_text(DM + " has been set as Dungeon Master")
     else:
-        update.effective_message.reply_text("DM " + DM + " has already been set!")
+        update.effective_message.reply_text("DM " + DM.first_name + " has already been set!")
 
 
 def createCharacter(bot, update, args):
@@ -147,17 +163,19 @@ def createCharacter(bot, update, args):
     if findCharacterIndex(update.message.from_user.first_name) != -1:
         update.effective_message.reply_text("@" + update.message.from_user.first_name + " already has a character")
         return None
-    character_name = update.message.text[17:].lower()
+    character_name = args[0]
+    race = args[1]
+    _class = args[2]
     player_name = update.message.from_user.first_name
-    characterList.append(Character(player_name, character_name))
+    ch = Character(player_name, character_name)
+    ch.updateStats(race, _class)
+    characterList.append(ch)
     # Displays "Character [Character] has been created [Player]"
-    update.effective_message.reply_text("Character " + characterList[playerIndex].characterName + "has been created "
-                                                                                                  "by " + characterList[
-                                            playerIndex].playerName)
+    update.effective_message.reply_text("Character " + character_name + "has been created  by " + player_name)
     playerIndex += 1
     # Displays "@[Player] Please enter your character's attributes in the format of [Race] [Class]"
     update.effective_message.reply_text("@" + player_name + "Please enter your character's Race & Class in the "
-                                                            "format: [Race] [Class]")
+                                                            "format: [Name] [Race] [Class]")
     global attributes
     attributes = True
 
@@ -222,8 +240,8 @@ def findCharacterIndex(first_name):
 
 def alterHealth(bot, update, args):
     # /changehealth charactername value
-    user = update.message.from_user.first_name
-    if user != DM:
+    user = update.message.from_user
+    if DM and user.id != DM.id:
         update.effective_message.reply_text("You're not authorised to use this command!")
     else:
         user_input = parseInput(update.message.text, 3)
@@ -235,8 +253,8 @@ def alterHealth(bot, update, args):
 
 
 def inventoryUpdate(bot, update, args):
-    user = update.message.from_user.first_name
-    if user != DM:
+    user = update.message.from_user
+    if DM and user.id != DM.id:
         update.effective_message.reply_text("You're not authorised to use this command!")
     else:
         inventory_input = parseInput(update.message.text, 5)
@@ -285,8 +303,8 @@ def printInventory(bot, update, args):
 
 def alterGold(bot, update, args):
     # /changehealth charactername value
-    user = update.message.from_user.first_name
-    if user != DM:
+    user = update.message.from_user
+    if DM and user.id != DM.id:
         update.effective_message.reply_text("You're not authorised to use this command!")
     else:
         user_input = parseInput(update.message.text, 3)
@@ -300,8 +318,8 @@ def alterGold(bot, update, args):
 
 def alterExperience(bot, update, args):
     # /changeXP character_name value
-    user = update.message.from_user.first_name
-    if user != DM:
+    user = update.message.from_user
+    if DM and user.id != DM.id:
         update.effective_message.reply_text("You're not authorised to use this command!")
     else:
         user_input = parseInput(update.message.text, 3)
@@ -339,18 +357,22 @@ __mod_name__ = "DnDMain"
 
 SETDM_HANDLER = DisableAbleCommandHandler("setdm", setDM, pass_args=True)
 CHANGEHEALTH_HANDLER = DisableAbleCommandHandler("changehealth", alterHealth, pass_args=True)
-CREATECHARACTER_HANDLER = DisableAbleCommandHandler("createcharacter", createCharacter, pass_args=True)
-PRINTCHARACTERSTATS_HANDLER = DisableAbleCommandHandler("printcharacterstats", printCharacterStats, pass_args=True)
-UPDATEINVENTORY_HANDLER = DisableAbleCommandHandler("updateinventory", inventoryUpdate, pass_args=True)
-PRINTINVENTORY_HANDLER = DisableAbleCommandHandler("printinventory", printInventory, pass_args=True)
 CHANGEGOLD_HANDLER = DisableAbleCommandHandler("changegold", alterGold, pass_args=True)
 CHANGEXP_HANDLER = DisableAbleCommandHandler("changexp", alterExperience, pass_args=True)
 
 dispatcher.add_handler(SETDM_HANDLER)
 dispatcher.add_handler(CHANGEHEALTH_HANDLER)
+dispatcher.add_handler(CHANGEGOLD_HANDLER)
+dispatcher.add_handler(CHANGEXP_HANDLER)
+
+CREATECHARACTER_HANDLER = DisableAbleCommandHandler("createcharacter", createCharacter, pass_args=True)
+PRINTCHARACTERSTATS_HANDLER = DisableAbleCommandHandler("printcharacterstats", printCharacterStats, pass_args=True)
+UPDATEINVENTORY_HANDLER = DisableAbleCommandHandler("updateinventory", inventoryUpdate, pass_args=True)
+PRINTINVENTORY_HANDLER = DisableAbleCommandHandler("printinventory", printInventory, pass_args=True)
+
 dispatcher.add_handler(CREATECHARACTER_HANDLER)
 dispatcher.add_handler(PRINTCHARACTERSTATS_HANDLER)
 dispatcher.add_handler(UPDATEINVENTORY_HANDLER)
 dispatcher.add_handler(PRINTINVENTORY_HANDLER)
-dispatcher.add_handler(CHANGEGOLD_HANDLER)
-dispatcher.add_handler(CHANGEXP_HANDLER)
+
+
