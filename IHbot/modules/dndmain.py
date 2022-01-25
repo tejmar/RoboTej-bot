@@ -38,13 +38,11 @@ class Character(object):
         self.characterName = character_name.lower()
 
     def updateStats(self, race, _class):
-        # FIXME throw and/or default if the race/class is invalid
         self.race = race
         self._class = _class
 
-        # down here, why does it say like "if constitution x then health y"?
-        # what if it doesn't? i don't understand the point of the conditional
-        # i mean, it can't be false... ? ...
+        # updateStats should be renamed, if it's only used during creation
+        # in fact, current content is init, really
 
         # Race Stats for Human
         if self.race == 'human':
@@ -54,8 +52,7 @@ class Character(object):
             self.stats['intelligence'] = 5
             self.stats['constitution'] = 5
             self.stats['charisma'] = 5
-            if self.stats['constitution'] == 5:
-                self.stats['health'] = 18
+            self.stats['health'] = 18
         # Race Stats for Dwarf
         elif self.race == 'dwarf':
             self.stats['strength'] = 6
@@ -64,8 +61,7 @@ class Character(object):
             self.stats['intelligence'] = 3
             self.stats['constitution'] = 7
             self.stats['charisma'] = 3
-            if self.stats['constitution'] == 7:
-                self.stats['health'] = 20
+            self.stats['health'] = 20
         # Race Stats for Elf
         elif self.race == 'elf':
             self.stats['strength'] = 3
@@ -74,8 +70,7 @@ class Character(object):
             self.stats['intelligence'] = 7
             self.stats['constitution'] = 3
             self.stats['charisma'] = 6
-            if self.stats['constitution'] == 3:
-                self.stats['health'] = 16
+            self.stats['health'] = 16
         # Race Stats for Ogre
         elif self.race == 'ogre':
             self.stats['strength'] = 10
@@ -84,8 +79,7 @@ class Character(object):
             self.stats['intelligence'] = 3
             self.stats['constitution'] = 8
             self.stats['charisma'] = 3
-            if self.stats['constitution'] == 8:
-                self.stats['health'] = 21
+            self.stats['health'] = 21
         # Race Stats for Merman
         elif self.race == 'merman':
             self.stats['strength'] = 7
@@ -94,66 +88,64 @@ class Character(object):
             self.stats['intelligence'] = 5
             self.stats['constitution'] = 4
             self.stats['charisma'] = 3
-            if self.stats['constitution'] == 4:
-                self.stats['health'] = 17
+            self.stats['health'] = 17
         else:
             raise ValueError(race + " is not a valid race! You must choose (human|dwarf|elf|ogre|merman)")
 
         # Class Stats for Fighter
         if self._class == 'fighter':
-            self.stats['strength'] = self.stats['strength'] + 2
-            self.stats['dexterity'] = self.stats['dexterity']
-            self.stats['wisdom'] = self.stats['wisdom'] - 1
-            self.stats['intelligence'] = self.stats['intelligence'] - 2
-            self.stats['constitution'] = self.stats['constitution'] + 2
-            self.stats['charisma'] = self.stats['charisma'] - 1
+            self.stats['strength'] += 2
+            # self.stats['dexterity'] = self.stats['dexterity']
+            self.stats['wisdom'] -= 1
+            self.stats['intelligence'] -= 2
+            self.stats['constitution'] += 2
+            self.stats['charisma'] -= 1
             self.stats['gold'] = 50
-            self.stats['experience'] = 0
         # Class Stats for Mage
         elif self._class == 'mage':
-            self.stats['strength'] = self.stats['strength'] - 2
-            self.stats['dexterity'] = self.stats['dexterity']
-            self.stats['wisdom'] = self.stats['wisdom'] + 2
-            self.stats['intelligence'] = self.stats['intelligence'] + 2
-            self.stats['constitution'] = self.stats['constitution'] - 1
-            self.stats['charisma'] = self.stats['charisma'] - 1
+            self.stats['strength'] -= 2
+            # self.stats['dexterity'] = self.stats['dexterity']
+            self.stats['wisdom'] += 2
+            self.stats['intelligence'] += 2
+            self.stats['constitution'] -= 1
+            self.stats['charisma'] -= 1
             self.stats['gold'] = 100
         # Class Stats for Priest
         elif self._class == 'priest':
-            self.stats['strength'] = self.stats['strength'] - 2
-            self.stats['dexterity'] = self.stats['dexterity']
-            self.stats['wisdom'] = self.stats['wisdom'] + 3
-            self.stats['intelligence'] = self.stats['intelligence'] + 1
-            self.stats['constitution'] = self.stats['constitution'] - 1
-            self.stats['charisma'] = self.stats['charisma'] - 1
+            self.stats['strength'] -= 2
+            # self.stats['dexterity'] = self.stats['dexterity']
+            self.stats['wisdom'] += 3
+            self.stats['intelligence'] += 1
+            self.stats['constitution'] -= 1
+            self.stats['charisma'] -= 1
             self.stats['gold'] = 250
-            self.stats['experience'] = 0
         # Class Stats for Thief
         elif self._class == 'thief':
-            self.stats['strength'] = self.stats['strength'] - 1
-            self.stats['dexterity'] = self.stats['dexterity'] + 2
-            self.stats['wisdom'] = self.stats['wisdom'] - 2
-            self.stats['intelligence'] = self.stats['intelligence']
-            self.stats['constitution'] = self.stats['constitution'] - 1
-            self.stats['charisma'] = self.stats['charisma'] + 2
+            self.stats['strength'] -= 1
+            self.stats['dexterity'] += 2
+            self.stats['wisdom'] -= 2
+            # self.stats['intelligence'] = self.stats['intelligence']
+            self.stats['constitution'] -= 1
+            self.stats['charisma'] += 2
             self.stats['gold'] = 200
-            self.stats['experience'] = 0
         # Class Stats for Ranger
         elif self._class == 'ranger':
-            self.stats['strength'] = self.stats['strength'] - 1
-            self.stats['dexterity'] = self.stats['dexterity'] + 3
-            self.stats['wisdom'] = self.stats['wisdom'] - 1
-            self.stats['intelligence'] = self.stats['intelligence']
-            self.stats['constitution'] = self.stats['constitution'] - 2
-            self.stats['charisma'] = self.stats['charisma'] + 1
+            self.stats['strength'] -= 1
+            self.stats['dexterity'] += 3
+            self.stats['wisdom'] -= 1
+            # self.stats['intelligence'] = self.stats['intelligence']
+            self.stats['constitution'] -= 2
+            self.stats['charisma'] += 1
             self.stats['gold'] = 200
-            self.stats['experience'] = 0
         else:
             raise ValueError(_class + " is not a valid class! You must choose (fighter|mage|priest|thief|ranger)")
+
+        self.stats['experience'] = 0
 
 
 def setDM(bot, update, args):
     global DM
+    # this should not just set to "whoever asks", and it should be changeable. by DM or by admin?
     if DM.id == 0:
         DM = update.message.from_user
         update.effective_message.reply_text(DM.first_name + " has been set as Dungeon Master")
@@ -165,7 +157,7 @@ def createCharacter(bot, update, args):
     global playerIndex
     if findCharacterIndex(update.message.from_user.first_name) != -1:
         update.effective_message.reply_text(update.message.from_user.first_name + " already has a character")
-        return None
+        return False
     player_name = update.message.from_user.first_name
     # need to crash or default if these are not set
     try:
@@ -186,8 +178,11 @@ def createCharacter(bot, update, args):
         return False
     characterList.append(ch)
     # Displays "Character [Character] has been created [Player]"
-    update.effective_message.reply_text("Character " + character_name + "has been created  by " + player_name)
+    update.effective_message.reply_text("Character " + character_name + " has been created  by " + player_name)
     playerIndex += 1
+
+    # consider: print the stat sheet -- print race/class/etc and then call printCharacterSheet?
+    # printCharactersheet needs its meat separated out from the command handler, then
 
     return True
 
