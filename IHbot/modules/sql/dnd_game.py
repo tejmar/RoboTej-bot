@@ -74,3 +74,10 @@ def set_dm(tg_chat_id, user, new_dm, is_admin):
                 return True
         SESSION.commit()
         return False
+
+
+def get_dm(tg_chat_id):
+    try:
+        return get_game(tg_chat_id)[0].dungeon_master
+    except IndexError:
+        return 0

@@ -210,6 +210,17 @@ def setDM(bot, update, args):
     else:
         message.reply_text("Failed to set Dungeon Master. Only a chat admin or the current DM may do that.")
 
+# game
+@run_async
+def getDM(bot, update, args):
+    tg_chat_id = str(update.effective_chat.id)
+    message = update.effective_message
+    dm = games.get_dm(tg_chat_id)
+    if dm:
+        message.reply_text(get_name_by_userid(dm) + " is your Dungeon Master")
+    else:
+        message.reply_text("There is no game running yet.")
+
 
 # character
 def createCharacter(bot, update, args):
@@ -428,12 +439,18 @@ __help__ = """
 
 __mod_name__ = "DnDMain"
 
+STARTDND_HANDLER = DisableAbleCommandHandler("startdnd", startGame, pass_args=True)
+ENDDND_HANDLER = DisableAbleCommandHandler("enddnd", endGame, pass_args=True)
 SETDM_HANDLER = DisableAbleCommandHandler("setdm", setDM, pass_args=True)
+GETDM_HANDLER = DisableAbleCommandHandler("getdm", getDM, pass_args=True)
 CHANGEHEALTH_HANDLER = DisableAbleCommandHandler("changehealth", alterHealth, pass_args=True)
 CHANGEGOLD_HANDLER = DisableAbleCommandHandler("changegold", alterGold, pass_args=True)
 CHANGEXP_HANDLER = DisableAbleCommandHandler("changexp", alterExperience, pass_args=True)
 
+dispatcher.add_handler(STARTDND_HANDLER)
+dispatcher.add_handler(ENDDND_HANDLER)
 dispatcher.add_handler(SETDM_HANDLER)
+dispatcher.add_handler(GETDM_HANDLER)
 dispatcher.add_handler(CHANGEHEALTH_HANDLER)
 dispatcher.add_handler(CHANGEGOLD_HANDLER)
 dispatcher.add_handler(CHANGEXP_HANDLER)
