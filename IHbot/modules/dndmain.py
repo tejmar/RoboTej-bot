@@ -205,7 +205,7 @@ def setDM(bot, update, args):
         if user.user == dm:
             found = True
     if not found:
-        message.reply_text(users_sql.get_name_by_userid(dm) + " is not in this chat")
+        message.reply_text(users_sql.get_name_by_userid(int(dm)) + " is not in this chat")
         return
 
     current_games = games.check_availability(tg_chat_id)
@@ -216,7 +216,7 @@ def setDM(bot, update, args):
 
     success = games.set_dm(tg_chat_id, message.from_user.id, dm, user_admin(message.from_user.id))
     if success:
-        message.reply_text(users_sql.get_name_by_userid(dm) + " has been set as Dungeon Master")
+        message.reply_text(users_sql.get_name_by_userid(int(dm)) + " has been set as Dungeon Master")
     else:
         message.reply_text("Failed to set Dungeon Master. Only a chat admin or the current DM may do that.")
 
