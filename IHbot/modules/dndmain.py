@@ -196,6 +196,8 @@ def setDM(bot, update, args):
     if dm is None:
         dm = message.from_user.id
 
+    print(dm)
+
     tg_chat_id = str(update.effective_chat.id)
 
     if dm not in users_sql.get_chat_members(tg_chat_id):
