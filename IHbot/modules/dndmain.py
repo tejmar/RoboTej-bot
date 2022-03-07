@@ -8,7 +8,7 @@ from IHbot.modules.sql import dnd_game as games
 from IHbot.modules.sql import dnd_character as characters
 from IHbot.modules.sql import dnd_inventory as items
 from IHbot.modules.sql import dnd_monster as monsters
-from IHbot.modules.sql.users_sql import get_name_by_userid, get_chat_members
+from IHbot.modules.sql import users_sql
 from IHbot.modules.users import get_user_id
 
 characterList = []
@@ -173,7 +173,6 @@ def startGame(bot, update, args):
         update.effective_message.reply_text("This chat already has a game running")
     else:
         games.add_game(tg_chat_id, dm)
-
         update.effective_message.reply_text("Game started!")
 
 
@@ -182,6 +181,7 @@ def startGame(bot, update, args):
 @run_async
 def endGame(bot, update, args):
     games.remove_game(str(update.effective_chat.id))
+    update.effective_message.reply_text("Game ended!")
     pass
 
 
@@ -198,6 +198,10 @@ def setDM(bot, update, args):
 
     tg_chat_id = str(update.effective_chat.id)
 
+    if dm not in users_sql.get_chat_members(tg_chat_id):
+        message.reply_text(users_sql.get_name_by_userid(dm) + " is not in this chat")
+        return
+
     current_games = games.check_availability(tg_chat_id)
 
     if not current_games:
@@ -206,8 +210,7 @@ def setDM(bot, update, args):
 
     success = games.set_dm(tg_chat_id, message.from_user.id, dm, user_admin(message.from_user.id))
     if success:
-        print(get_chat_members(tg_chat_id))
-        message.reply_text(get_name_by_userid(dm) + " has been set as Dungeon Master")
+        message.reply_text(users_sql.get_name_by_userid(dm) + " has been set as Dungeon Master")
     else:
         message.reply_text("Failed to set Dungeon Master. Only a chat admin or the current DM may do that.")
 
@@ -218,7 +221,7 @@ def getDM(bot, update, args):
     message = update.effective_message
     dm = games.get_dm(tg_chat_id)
     if dm:
-        message.reply_text(get_name_by_userid(dm) + " is your Dungeon Master")
+        message.reply_text(users_sql.get_name_by_userid(dm) + " is your Dungeon Master")
     else:
         message.reply_text("There is no game running yet.")
 
