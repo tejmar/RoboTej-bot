@@ -1,11 +1,20 @@
 from telegram import User
+from telegram.ext import run_async
 
 from IHbot import dispatcher
 from IHbot.modules.disable import DisableAbleCommandHandler
+from IHbot.modules.helper_funcs.chat_status import user_admin
+from IHbot.modules.sql import dnd_game as games
+from IHbot.modules.sql import dnd_character as characters
+from IHbot.modules.sql import dnd_inventory as items
+from IHbot.modules.sql import dnd_monster as monsters
+from IHbot.modules.sql.users_sql import get_name_by_userid
+from IHbot.modules.users import get_user_id
 
 characterList = []
 playerIndex = 0
 DM = User(first_name="", id=0, is_bot=True)
+
 
 # This module has a lot of issues I'd like to fix before pushing it into a production bot.
 # I'm committing in an unsatisfactory spot so that I can catch any glaring derps before I start hacking it up.
@@ -24,6 +33,7 @@ DM = User(first_name="", id=0, is_bot=True)
 # I think that'll be easier to test once the gist of everything mostly works.
 
 
+# character
 class Character(object):
     playerName = None
     characterName = None
@@ -143,16 +153,65 @@ class Character(object):
         self.stats['experience'] = 0
 
 
-def setDM(bot, update, args):
-    global DM
-    # this should not just set to "whoever asks", and it should be changeable. by DM or by admin?
-    if DM.id == 0:
-        DM = update.message.from_user
-        update.effective_message.reply_text(DM.first_name + " has been set as Dungeon Master")
+# game
+@user_admin
+@run_async
+def startGame(bot, update, args):
+    dm = None
+    if len(args) >= 1:
+        dm = get_user_id(args[0])
+    if dm is None:
+        dm = update.message.from_user.id
+
+    tg_chat_id = str(update.effective_chat.id)
+
+    # gather the row which contains exactly that telegram group ID and link for later comparison
+    row = games.check_availability(tg_chat_id)
+
+    # check if there's an entry already added to DB by the same user in the same group with the same link
+    if row:
+        update.effective_message.reply_text("This chat already has a game running")
     else:
-        update.effective_message.reply_text("DM " + DM.first_name + " has already been set!")
+        games.add_game(tg_chat_id, dm)
+
+        update.effective_message.reply_text("Game started!")
 
 
+# game
+@user_admin
+@run_async
+def endGame(bot, update, args):
+    games.remove_game(str(update.effective_chat.id))
+    pass
+
+
+# game
+@run_async
+def setDM(bot, update, args):
+    message = update.effective_message
+
+    dm = None
+    if len(args) >= 1:
+        dm = get_user_id(args[0])
+    if dm is None:
+        dm = message.from_user.id
+
+    tg_chat_id = str(update.effective_chat.id)
+
+    current_games = games.check_availability(tg_chat_id)
+
+    if not current_games:
+        message.reply_text("There is no game running yet. Attempting to start one...")
+        return startGame(bot, update, args)
+
+    success = games.set_dm(tg_chat_id, message.from_user.id, dm, user_admin(message.from_user.id))
+    if success:
+        message.reply_text(get_name_by_userid(dm) + " has been set as Dungeon Master")
+    else:
+        message.reply_text("Failed to set Dungeon Master. Only a chat admin or the current DM may do that.")
+
+
+# character
 def createCharacter(bot, update, args):
     global playerIndex
     if findCharacterIndex(update.message.from_user.first_name) != -1:
@@ -218,6 +277,7 @@ def createCharacter(bot, update, args):
 #         attributes = False
 
 
+# character
 def printCharacterStats(bot, update, args):
     # /printcharacterstats CHARACTER_NAME
     user_input = parseInput(update.message.text, 2)
@@ -238,6 +298,7 @@ def printCharacterStats(bot, update, args):
     update.effective_message.reply_text(statsheet)
 
 
+# character
 def findCharacterIndex(first_name):
     for i in range(len(characterList)):
         if characterList[i].playerName == first_name:
@@ -245,6 +306,7 @@ def findCharacterIndex(first_name):
     return -1
 
 
+# character
 def alterHealth(bot, update, args):
     # /changehealth charactername value
     user = update.message.from_user
@@ -259,6 +321,7 @@ def alterHealth(bot, update, args):
             2] + " to " + str(characterList[i].stats['health']))
 
 
+# inventory (#character?)
 def inventoryUpdate(bot, update, args):
     user = update.message.from_user
     if user.id != DM.id:
@@ -296,6 +359,7 @@ def inventoryUpdate(bot, update, args):
         update.effective_message.reply_text(text)
 
 
+# inventory (character?)
 def printInventory(bot, update, args):
     inventory_input = update.message.text
     inventory_input = inventory_input.split()
@@ -308,6 +372,7 @@ def printInventory(bot, update, args):
     update.effective_message.reply_text(text)
 
 
+# character
 def alterGold(bot, update, args):
     # /changehealth charactername value
     user = update.message.from_user
@@ -323,6 +388,7 @@ def alterGold(bot, update, args):
             2] + " to " + str(characterList[i].stats['gold']))
 
 
+# character
 def alterExperience(bot, update, args):
     # /changeXP character_name value
     user = update.message.from_user
@@ -381,5 +447,3 @@ dispatcher.add_handler(CREATECHARACTER_HANDLER)
 dispatcher.add_handler(PRINTCHARACTERSTATS_HANDLER)
 dispatcher.add_handler(UPDATEINVENTORY_HANDLER)
 dispatcher.add_handler(PRINTINVENTORY_HANDLER)
-
-
