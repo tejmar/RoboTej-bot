@@ -78,6 +78,6 @@ def set_dm(tg_chat_id, user, new_dm, is_admin):
 
 def get_dm(tg_chat_id):
     try:
-        return get_game(tg_chat_id)[0].dungeon_master
+        return get_game(tg_chat_id).dungeon_master
     except IndexError:
         return 0

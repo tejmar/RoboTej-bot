@@ -8,7 +8,7 @@ from IHbot.modules.sql import dnd_game as games
 from IHbot.modules.sql import dnd_character as characters
 from IHbot.modules.sql import dnd_inventory as items
 from IHbot.modules.sql import dnd_monster as monsters
-from IHbot.modules.sql.users_sql import get_name_by_userid
+from IHbot.modules.sql.users_sql import get_name_by_userid, get_chat_members
 from IHbot.modules.users import get_user_id
 
 characterList = []
@@ -206,6 +206,7 @@ def setDM(bot, update, args):
 
     success = games.set_dm(tg_chat_id, message.from_user.id, dm, user_admin(message.from_user.id))
     if success:
+        print(get_chat_members(tg_chat_id))
         message.reply_text(get_name_by_userid(dm) + " has been set as Dungeon Master")
     else:
         message.reply_text("Failed to set Dungeon Master. Only a chat admin or the current DM may do that.")
