@@ -200,8 +200,11 @@ def setDM(bot, update, args):
 
     tg_chat_id = str(update.effective_chat.id)
 
-    if dm not in users_sql.get_chat_members(tg_chat_id):
-        print(len(users_sql.get_chat_members(tg_chat_id)))
+    found = False
+    for user in users_sql.get_chat_members(tg_chat_id):
+        if user.user == dm:
+            found = True
+    if not found:
         message.reply_text(users_sql.get_name_by_userid(dm) + " is not in this chat")
         return
 
