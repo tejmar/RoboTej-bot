@@ -1,4 +1,5 @@
-import html, time
+import html
+import time
 from typing import Optional, List
 
 from telegram import Message, Chat, Update, Bot, User
@@ -8,7 +9,7 @@ from telegram.ext import MessageHandler, Filters, CommandHandler, run_async
 from telegram.utils.helpers import mention_markdown, mention_html, escape_markdown
 
 import IHbot.modules.sql.welcome_sql as sql
-from IHbot import dispatcher, OWNER_ID, LOGGER
+from IHbot import dispatcher, OWNER_ID, LOGGER, BAN_STICKER
 from IHbot.modules.helper_funcs import cas_api as cas
 from IHbot.modules.helper_funcs.chat_status import user_admin, is_user_ban_protected, can_delete
 from IHbot.modules.helper_funcs.misc import build_keyboard, revert_buttons
@@ -35,7 +36,8 @@ ENUM_FUNC_MAP = {
 # do not async
 def send(update, message, keyboard, backup_message):
     try:
-        msg = update.effective_message.reply_text(message, parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard, disable_web_page_preview=True)
+        msg = update.effective_message.reply_text(message, parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard,
+                                                  disable_web_page_preview=True)
     except IndexError:
         msg = update.effective_message.reply_text(markdown_parser(backup_message +
                                                                   "\nNote: the current message was "
@@ -98,20 +100,33 @@ def new_member(bot: Bot, update: Update):
                                  excp.message)
         cas_result = cas.get_user_data(mems.id)
         if cas.isbanned(cas_result):
+            reply_text = "Banned %s because they have %s offences in CAS!\nFor info see \
+            https://api.cas.chat/check?user_id=%s" % (mention_html(mems.user.id, mems.user.first_name),
+                                                      cas.offenses(cas_result), mems.user.id)
             try:
-                bot.restrict_chat_member(chat.id, mems.id, can_send_messages=False, can_send_media_messages=False,
-                                         can_send_other_messages=False, can_add_web_page_previews=False,
-                                         until_date=(int(time.time() + 24 * 60 * 60 * 365 * 100)))
-                update.effective_message.reply_text("User is CAS banned!")
-                LOGGER.warning(update)
-                LOGGER.info("INFO: TOTALLY muting user %s for 100 years in chat %s (%s) due to CAS saying: %s", mems.id,
-                            chat.title,
-                            chat.id,
-                            cas.offenses(cas_result))
+                chat.kick_member(mems.id)
+                bot.send_sticker(chat.id, BAN_STICKER)
+                LOGGER.info("<b>{}:</b>"
+                            "\n#BANNED"
+                            "\n<b>CAS said:</b> {} offenses"
+                            "\n<b>User:</b> {} (<code>{}</code>)", html.escape(chat.title),
+                            cas.offenses(cas_result),
+                            mention_html(mems.user.id, mems.user.first_name),
+                            mems.user.id)
+                update.effective_message.reply_text(reply_text)
+
             except BadRequest as excp:
-                LOGGER.warning(update)
-                LOGGER.exception("ERROR muting user %s in chat %s (%s) due to %s", mems.id, chat.title, chat.id,
-                                 excp.message)
+                if excp.message == "Reply message not found":
+                    # Do not reply
+                    update.effective_message.reply_text(reply_text, quote=False)
+                else:
+                    LOGGER.warning(update)
+                    LOGGER.exception("ERROR banning user %s in chat %s (%s) due to %s", mems.id, chat.title, chat.id,
+                                     excp.message)
+                    update.effective_message.reply_text("Well damn, I can't ban that %s -- but they're CAS banned! See \
+                    https://api.cas.chat/check?user_id=%s" %
+                                                        (mention_html(mems.user.id, mems.user.first_name), mems.id))
+            return
 
     should_welc, cust_welcome, welc_type = sql.get_welc_pref(chat.id)
     if should_welc:
@@ -171,7 +186,6 @@ def new_member(bot: Bot, update: Update):
                 sent = send(update, res, keyboard,
                             sql.DEFAULT_WELCOME.format(first=first_name))  # type: Optional[Message]
             delete_join(bot, update)
-
 
         prev_welc = sql.get_clean_pref(chat.id)
         if prev_welc:
@@ -312,7 +326,8 @@ def goodbye(bot: Bot, update: Update, args: List[str]):
                 ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m)
 
             else:
-                ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+                ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m, parse_mode=ParseMode.MARKDOWN,
+                                            disable_web_page_preview=True)
 
     elif len(args) >= 1:
         if args[0].lower() in ("on", "yes"):
@@ -463,7 +478,7 @@ def del_joined(bot: Bot, update: Update, args: List[str]) -> str:
                "\n#CLEAN_SERVICE" \
                "\n<b>• Admin:</b> {}" \
                "\nHas toggled joined deletion to <code>ON</code>.".format(html.escape(chat.title),
-                                                                         mention_html(user.id, user.first_name))
+                                                                          mention_html(user.id, user.first_name))
     elif args[0].lower() in ("off", "no"):
         sql.set_del_joined(str(chat.id), False)
         update.effective_message.reply_text("I won't delete old joined messages.")
